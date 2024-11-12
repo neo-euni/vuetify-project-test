@@ -48,14 +48,15 @@
         <!-- 2단계 -->
         <template v-slot:item.2>
           <v-container>
-            <v-row justify="start">
+            <v-row justify="center">
+              <!-- 환자, case setting 영역 -->
               <v-card>
                 <v-card-title>New Patient Case</v-card-title>
                 <v-card-text>
                   <v-form ref="patientForm" @submit.prevent="saveNewPatient">
                     <v-row>
                       <!-- Name, ID, Gender, DOB 영역 -->
-                      <v-col cols="5">
+                      <v-col cols="6">
                         <v-text-field
                           v-model="newPatient.name"
                           label="Name"
@@ -65,6 +66,7 @@
                           v-model="newPatient.id"
                           label="ID"
                           required
+                          unique
                         ></v-text-field>
                         <v-select
                           v-model="newPatient.gender"
@@ -82,7 +84,7 @@
                       </v-col>
 
                       <!-- Memo 영역 -->
-                      <v-col cols="7">
+                      <v-col cols="6">
                         <v-textarea
                           v-model="newPatient.memo"
                           label="Memo"
@@ -101,19 +103,41 @@
                       >
                     </div>
                   </v-form>
-
-                  <!-- 환자 저장 시 치아 이미지 뜸 -->
-                  <v-card-title>Case Setting</v-card-title>
-                  <v-img
-                    v-if="showMouthStructure"
-                    src="@/assets/mouth-structure.png"
-                    alt="Mouth Structure"
-                    max-width="400"
-                    cover
-                    style="border: solid 1px #0cddcb"
-                    border-radius="5px"
-                  ></v-img>
                 </v-card-text>
+
+                <!-- 구강 이미지 케이스 세팅 -->
+                <v-card-title>Case Setting</v-card-title>
+                <v-row justify="center">
+                  <v-col cols="11" md="11" lg="11">
+                    <v-img
+                      v-if="showMouthStructure"
+                      src="@/assets/mouth-structure.png"
+                      alt="Mouth Structure"
+                      max-width="100%"
+                      cover
+                      style="border: solid 1px #0cddcb; border-radius: 5px"
+                    ></v-img>
+                  </v-col>
+                </v-row>
+              </v-card>
+              <!-- import data영역 -->
+              <v-card class="ml-10">
+                <v-card-title>Import Data</v-card-title>
+
+                <!-- 이미지가 제목 바로 아래에 오도록 배치 -->
+                <v-img
+                  v-if="showMouthStructure"
+                  src="@/assets/ctview.png"
+                  alt="Mouth Structure"
+                  width="500px"
+                  cover
+                  style="border: solid 1px #0cddcb; border-radius: 5px"
+                ></v-img>
+              </v-card>
+
+              <!-- select guide & jig 영역 -->
+              <v-card>
+                <v-card-title class="ml-10">Select Guide & Jig</v-card-title>
               </v-card>
             </v-row>
           </v-container>
@@ -171,7 +195,10 @@ export default {
     const patientList = ref([]);
     const newPatient = ref(new Patient());
     const today = ref(new Date().toISOString().split("T")[0]);
-    const showMouthStructure = ref(false);
+    const showMouthStructure = ref(false); // 구강구조 이미지 보여줄지 여부
+
+    // 여기서부터 three.js 추가
+    // -------------------------------------------------------------------여기까지 three.js 추가
 
     /**
      * @Description 클릭이벤트를 받으면 현재 단계를 1 증가 시킴 template에 v-model로 바인딩 되어 현재 단계를 화면에 반영시킴
@@ -199,7 +226,8 @@ export default {
             newPatient.value.name,
             newPatient.value.id,
             newPatient.value.gender,
-            newPatient.value.dob
+            newPatient.value.dob,
+            newPatient.value.memo
           )
         );
         showMouthStructure.value = true;
@@ -271,5 +299,16 @@ export default {
 
 ::v-deep .v-text-field input {
   font-size: 0.9rem !important;
+}
+
+/* three.js css 시작 */
+.drag-over {
+  border-color: #0cddcb;
+  background-color: #e0f7fa;
+}
+
+.three-canvas {
+  width: 100%;
+  height: 100%;
 }
 </style>
