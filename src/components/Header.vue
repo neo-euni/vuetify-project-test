@@ -29,6 +29,8 @@
                 <v-list-item
                   v-for="(patient, index) in patientList"
                   :key="index"
+                  link
+                  @click="createCase(patient, index)"
                 >
                   <v-list-item-content>
                     <v-list-item-title>{{ patient.name }}</v-list-item-title>
@@ -99,13 +101,17 @@
                       >
                     </div>
                   </v-form>
-                  <!-- 치아 이미지 들어와야 함  -->
+
+                  <!-- 환자 저장 시 치아 이미지 뜸 -->
+                  <v-card-title>Case Setting</v-card-title>
                   <v-img
                     v-if="showMouthStructure"
-                    src="@/assets/mouth-structure.jpg"
+                    src="@/assets/mouth-structure.png"
                     alt="Mouth Structure"
                     max-width="400"
-                    class="mt-4"
+                    cover
+                    style="border: solid 1px #0cddcb"
+                    border-radius="5px"
                   ></v-img>
                 </v-card-text>
               </v-card>
@@ -168,9 +174,8 @@ export default {
     const showMouthStructure = ref(false);
 
     /**
-     *
-     * @param event
      * @Description 클릭이벤트를 받으면 현재 단계를 1 증가 시킴 template에 v-model로 바인딩 되어 현재 단계를 화면에 반영시킴
+     * @param event
      * @return void
      */
     function createPatient(event: Event) {
@@ -198,6 +203,9 @@ export default {
           )
         );
         showMouthStructure.value = true;
+
+        resetNewPatient();
+        activeStep.value = STEP;
       }
     }
 
@@ -209,6 +217,17 @@ export default {
       newPatient.value.reset();
     }
 
+    /**
+     * @Description 환자 리스트에서 선택한 환자 정보를 가지고 케이스 생성 화면으로 이동
+     * @param patient, index
+     * @return void
+     */
+    function createCase(patient: Patient, index: number) {
+      newPatient.value = patient;
+      patientList.value.splice(index, 1);
+      activeStep.value++;
+    }
+
     return {
       activeStep,
       createPatient,
@@ -218,6 +237,7 @@ export default {
       resetNewPatient,
       today,
       showMouthStructure,
+      createCase,
     };
   },
 };
@@ -247,5 +267,9 @@ export default {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+}
+
+::v-deep .v-text-field input {
+  font-size: 0.9rem !important;
 }
 </style>
