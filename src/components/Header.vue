@@ -153,21 +153,22 @@
                     </div>
                   </v-card-text>
 
-                  <v-row>
+                  <v-row class="gap-4">
                     <v-col cols="6">
                       <v-card>
                         <v-card-title>Bite Jig View</v-card-title>
-                        <v-card-text class="bite-jig-view-img-section">
-                          <v-img
-                            v-if="selectedGuideImage"
-                            :src="selectedGuideImage"
-                            alt="Selected Guide Image"
-                            width="90%"
-                            height="90%"
-                            max-width="100%"
-                            max-height="100%"
-                            contain
-                          />
+                        <v-card-text>
+                          <div class="bite-jig-view-img-section">
+                            <v-img
+                              v-if="selectedGuideImage"
+                              :src="selectedGuideImage"
+                              alt="Selected Guide Image"
+                              width="90%"
+                              height="90%"
+                              max-width="100%"
+                              max-height="100%"
+                            ></v-img>
+                          </div>
                         </v-card-text>
                       </v-card>
                     </v-col>
