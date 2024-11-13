@@ -153,7 +153,7 @@
                     </div>
                   </v-card-text>
 
-                  <v-row class="gap-4">
+                  <v-row class="gap-2">
                     <v-col cols="6">
                       <v-card>
                         <v-card-title>Bite Jig View</v-card-title>
@@ -235,11 +235,13 @@
                   </v-col>
 
                   <!-- panoramic-view -->
-                  <v-col cols="4">
+                  <v-col cols="4" >
+                  <div class="panoramic-container">
                     <div class="panoramic-view"></div>
                     <div class="panoramic-view"></div>
                     <div class="panoramic-view"></div>
                     <div class="panoramic-view"></div>
+                  </div>
                   </v-col>
                 </v-row>
               </v-card-text>
@@ -487,18 +489,22 @@ export default {
 
 .detection-view {
   width: 100%;
-  height: 50rem;
+  height: 45rem;
   display: flex;
   border-radius: 5px;
   border: solid 1px #0cddcb;
 }
+.panoramic-container {
+  display: flex;
+  flex-direction: column;
+  height: 45rem;
+  gap: 20px;
+}
 
 .panoramic-view {
   width: 100%;
-  height: 12rem;
-  display: flex;
+  flex: 1; /* 동일한 높이로 분배 */
   border-radius: 5px;
   border: solid 1px #0cddcb;
-  margin-bottom: 10px;
 }
 </style>
