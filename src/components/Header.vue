@@ -652,6 +652,10 @@ canvas {
   cursor:crosshair;
   width: 100%;
   height: 100%;
+  background-image: url('@/assets/detection.png');
+  background-position: center; /* 배경 이미지를 중앙에 위치 */
+  background-size: contain; /* 배경 이미지가 요소의 크기에 맞게 조정되도록 설정 */
+  background-repeat: no-repeat; /* 배경 이미지 반복 없음 */
 }
 
 
