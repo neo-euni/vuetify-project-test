@@ -130,10 +130,9 @@
               </v-col>
               <!-- import data영역 -->
               <v-col cols="6">
-                <v-card>
-                  <v-card-title class="ml-8">Import Data</v-card-title>
-
-                  <v-card-text class="ml-8">
+                <v-card class="ml-8">
+                  <v-card-title>Import Data</v-card-title>
+                  <v-card-text>
                     <v-file-input
                       id="fileInput-obj"
                       @change="handleFileChangeAndLoad"
@@ -152,12 +151,17 @@
                         contain
                       />
                     </div>
-                    <!-- 
-                  3d model viewer
-                  <div
-                    ref="modelSceneContainer"
-                    class="modelSceneContainer"
-                  ></div> -->
+                  </v-card-text>
+
+                  <v-card-title>Bite Jig View</v-card-title>
+                  <v-card-text>
+                    <v-col cols="6">
+                      <div class="bite-jig-view-img-section"></div>
+                    </v-col>
+                    <v-card-title>Marker</v-card-title>
+                    <v-col cols="6">
+                      <div class="bite-jig-view-img-section"></div>
+                    </v-col>
                   </v-card-text>
                 </v-card>
               </v-col>
@@ -165,25 +169,26 @@
               <!-- select guide & jig 영역 -->
               <v-col cols="3">
                 <v-card class="ml-8">
-                  <v-card-title class="ml-8">Select Guide & Jig</v-card-title>
+                  <v-card-title>Select Guide & Jig</v-card-title>
                   <v-card-text>
                     <v-row>
                       <!-- 4행 2열 그리드 레이아웃 생성 -->
                       <v-col cols="6" v-for="n in 8" :key="n" class="grid-item">
                         <v-card outlined class="jig-slot">
-                          <v-btn
-                            icon
-                            @click="onImageClick(n)"
-                            class="image-button"
-                          >
-                            <v-img
-                              :src="`@/assets/${n}-preview.png`"
-                              alt="Slot Image"
-                              width="100%"
-                              height="100%"
-                              contain
-                            ></v-img>
-                          </v-btn>
+                          <v-card-text class="centered-image-container">
+                            <v-btn
+                              icon
+                              @click="onImageClick(n)"
+                              class="guide-image-btn"
+                            >
+                              <v-img
+                                v-if="guideImages && guideImages[n - 1]"
+                                :src="guideImages[n - 1]"
+                                alt="guideImages"
+                                class="image"
+                              ></v-img>
+                            </v-btn>
+                          </v-card-text>
                         </v-card>
                       </v-col>
                     </v-row>
@@ -213,6 +218,15 @@
 
 <script lang="ts">
 import { ref } from "vue";
+// 이미지 리스트 리소스 미리 로드
+import img1 from "@/assets/1-preview.png";
+import img2 from "@/assets/2-preview.png";
+import img3 from "@/assets/3-preview.png";
+import img4 from "@/assets/4-preview.png";
+import img5 from "@/assets/5-preview.png";
+import img6 from "@/assets/6-preview.png";
+import img7 from "@/assets/7-preview.png";
+import img8 from "@/assets/8-preview.png";
 
 class Patient {
   name: string;
@@ -248,6 +262,7 @@ export default {
     const showMouthStructure = ref(false);
     const uploadedImage = ref<string | null>(null);
     const showAlert = ref(false);
+    const guideImages = [img1, img2, img3, img4, img5, img6, img7, img8];
 
     function handleFileChangeAndLoad(event: Event) {
       const input = event.target as HTMLInputElement;
@@ -325,6 +340,7 @@ export default {
       handleFileChangeAndLoad,
       showAlert,
       onImageClick,
+      guideImages,
     };
   },
 };
@@ -380,9 +396,36 @@ export default {
 
 /* 지그 선택 버튼 */
 .jig-slot {
-  height: auto;
+  height: 13rem;
   width: 100%;
   border: 1px solid #0cddcb;
   border-radius: 5px;
+}
+
+.centered-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.guide-image-btn {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image {
+  width: 12rem;
+  object-fit: contain;
+}
+
+.bite-jig-view-img-section {
+  border-radius: 5px;
+  border: solid 1px #0cddcb;
+  width: 50%;
+  height: 16rem;
 }
 </style>
