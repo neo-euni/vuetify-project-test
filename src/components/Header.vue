@@ -49,96 +49,147 @@
         <template v-slot:item.2>
           <v-container>
             <v-row justify="center">
-              <!-- 환자, case setting 영역 -->
-              <v-card>
-                <v-card-title>New Patient Case</v-card-title>
-                <v-card-text>
-                  <v-form ref="patientForm" @submit.prevent="saveNewPatient">
-                    <v-row>
-                      <!-- Name, ID, Gender, DOB 영역 -->
-                      <v-col cols="6">
-                        <v-text-field
-                          v-model="newPatient.name"
-                          label="Name"
-                          required
-                        ></v-text-field>
-                        <v-text-field
-                          v-model="newPatient.id"
-                          label="ID"
-                          required
-                          unique
-                        ></v-text-field>
-                        <v-select
-                          v-model="newPatient.gender"
-                          :items="['Male', 'Female']"
-                          label="Gender"
-                          required
-                        ></v-select>
-                        <v-text-field
-                          v-model="newPatient.dob"
-                          label="Date of Birth"
-                          type="date"
-                          :max="today"
-                          required
-                        ></v-text-field>
-                      </v-col>
+              <v-col cols="3">
+                <!-- 환자, case setting 영역 -->
+                <v-card>
+                  <v-card-title>New Patient Case</v-card-title>
+                  <v-card-text>
+                    <v-form ref="patientForm" @submit.prevent="saveNewPatient">
+                      <v-row>
+                        <!-- Name, ID, Gender, DOB 영역 -->
+                        <v-col cols="6">
+                          <v-text-field
+                            v-model="newPatient.name"
+                            label="Name"
+                            required
+                          ></v-text-field>
+                          <v-text-field
+                            v-model="newPatient.id"
+                            label="ID"
+                            required
+                            unique
+                          ></v-text-field>
+                          <v-select
+                            v-model="newPatient.gender"
+                            :items="['Male', 'Female']"
+                            label="Gender"
+                            required
+                          ></v-select>
+                          <v-text-field
+                            v-model="newPatient.dob"
+                            label="Date of Birth"
+                            type="date"
+                            :max="today"
+                            required
+                          ></v-text-field>
+                        </v-col>
 
-                      <!-- Memo 영역 -->
-                      <v-col cols="6">
-                        <v-textarea
-                          v-model="newPatient.memo"
-                          label="Memo"
-                          outlined
-                          :rows="11"
-                        ></v-textarea>
-                      </v-col>
-                    </v-row>
+                        <!-- Memo 영역 -->
+                        <v-col cols="6">
+                          <v-textarea
+                            v-model="newPatient.memo"
+                            label="Memo"
+                            outlined
+                            :rows="11"
+                          ></v-textarea>
+                        </v-col>
+                      </v-row>
 
-                    <div class="new-patient-btns">
-                      <v-btn class="save-btn" @click="saveNewPatient"
-                        >Save</v-btn
-                      >
-                      <v-btn class="cancel-btn" @click="resetNewPatient"
-                        >Cancel</v-btn
-                      >
-                    </div>
-                  </v-form>
-                </v-card-text>
+                      <div class="new-patient-btns">
+                        <v-btn class="save-btn" @click="saveNewPatient"
+                          >Save</v-btn
+                        >
+                        <v-btn class="cancel-btn" @click="resetNewPatient"
+                          >Cancel</v-btn
+                        >
+                      </div>
+                    </v-form>
 
-                <!-- 구강 이미지 케이스 세팅 -->
-                <v-card-title>Case Setting</v-card-title>
-                <v-row justify="center">
-                  <v-col cols="11" md="11" lg="11">
-                    <v-img
-                      v-if="showMouthStructure"
-                      src="@/assets/mouth-structure.png"
-                      alt="Mouth Structure"
-                      max-width="100%"
-                      cover
-                      style="border: solid 1px #0cddcb; border-radius: 5px"
-                    ></v-img>
-                  </v-col>
-                </v-row>
-              </v-card>
+                    <!-- 알림 메시지 -->
+                    <v-alert v-if="showAlert" type="error" dense text>
+                      환자 필수 요소를 입력해주세요.
+                    </v-alert>
+                  </v-card-text>
+
+                  <!-- 구강 이미지 케이스 세팅 -->
+                  <v-card-title>Case Setting</v-card-title>
+                  <v-row justify="center">
+                    <v-col cols="11" md="11" lg="11">
+                      <v-img
+                        v-if="showMouthStructure"
+                        src="@/assets/mouth-structure.png"
+                        alt="Mouth Structure"
+                        max-width="100%"
+                        height="30rem"
+                        contain
+                        style="border: solid 1px #0cddcb; border-radius: 5px"
+                      ></v-img>
+                    </v-col>
+                  </v-row>
+                </v-card>
+              </v-col>
               <!-- import data영역 -->
-              <v-card class="ml-10">
-                <v-card-title>Import Data</v-card-title>
+              <v-col cols="6">
+                <v-card>
+                  <v-card-title class="ml-8">Import Data</v-card-title>
 
-                <!-- 이미지가 제목 바로 아래에 오도록 배치 -->
-                <v-img
-                  v-if="showMouthStructure"
-                  src="@/assets/ctview.png"
-                  alt="Mouth Structure"
-                  width="500px"
-                  cover
-                  style="border: solid 1px #0cddcb; border-radius: 5px"
-                ></v-img>
-              </v-card>
+                  <v-card-text class="ml-8">
+                    <v-file-input
+                      id="fileInput-obj"
+                      @change="handleFileChangeAndLoad"
+                      label="Upload 3D Model (.obj)"
+                      prepend-icon="mdi-file-upload"
+                      outlined
+                      dense
+                      class="fixed-width-file-input"
+                    ></v-file-input>
+                    <div class="model-view-section">
+                      <v-img
+                        v-if="uploadedImage"
+                        :src="uploadedImage"
+                        alt="Uploaded Image"
+                        max-width="100%"
+                        contain
+                      />
+                    </div>
+                    <!-- 
+                  3d model viewer
+                  <div
+                    ref="modelSceneContainer"
+                    class="modelSceneContainer"
+                  ></div> -->
+                  </v-card-text>
+                </v-card>
+              </v-col>
 
               <!-- select guide & jig 영역 -->
-              <v-card>
-                <v-card-title class="ml-10">Select Guide & Jig</v-card-title>
-              </v-card>
+              <v-col cols="3">
+                <v-card class="ml-8">
+                  <v-card-title class="ml-8">Select Guide & Jig</v-card-title>
+                  <v-card-text>
+                    <v-row>
+                      <!-- 4행 2열 그리드 레이아웃 생성 -->
+                      <v-col cols="6" v-for="n in 8" :key="n" class="grid-item">
+                        <v-card outlined class="jig-slot">
+                          <v-btn
+                            icon
+                            @click="onImageClick(n)"
+                            class="image-button"
+                          >
+                            <v-img
+                              :src="`@/assets/${n}-preview.png`"
+                              alt="Slot Image"
+                              width="100%"
+                              height="100%"
+                              contain
+                            ></v-img>
+                          </v-btn>
+                        </v-card>
+                      </v-col>
+                    </v-row>
+                  </v-card-text>
+                </v-card>
+              </v-col>
             </v-row>
           </v-container>
         </template>
@@ -178,7 +229,6 @@ class Patient {
     this.memo = memo;
   }
 
-  // 필요한 메서드를 추가할 수 있습니다.
   reset() {
     this.name = "";
     this.id = "";
@@ -190,29 +240,33 @@ class Patient {
 
 export default {
   setup() {
-    const STEP: number = 1; // 초기 단계 설정
+    const STEP: number = 1;
     const activeStep = ref(STEP);
     const patientList = ref([]);
     const newPatient = ref(new Patient());
     const today = ref(new Date().toISOString().split("T")[0]);
-    const showMouthStructure = ref(false); // 구강구조 이미지 보여줄지 여부
+    const showMouthStructure = ref(false);
+    const uploadedImage = ref<string | null>(null);
+    const showAlert = ref(false);
 
-    // 여기서부터 three.js 추가
-    // -------------------------------------------------------------------여기까지 three.js 추가
+    function handleFileChangeAndLoad(event: Event) {
+      const input = event.target as HTMLInputElement;
+      const file = input.files ? input.files[0] : null;
 
-    /**
-     * @Description 클릭이벤트를 받으면 현재 단계를 1 증가 시킴 template에 v-model로 바인딩 되어 현재 단계를 화면에 반영시킴
-     * @param event
-     * @return void
-     */
+      if (file) {
+        // FileReader를 사용하여 이미지 파일을 URL로 변환
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          uploadedImage.value = e.target?.result as string;
+        };
+        reader.readAsDataURL(file); // 파일을 Data URL로 읽기
+      }
+    }
+
     function createPatient(event: Event) {
       activeStep.value++;
     }
 
-    /**
-     * @Description 사용자가 입력한 환자 정보를 환자 리스트에 추가
-     * @return void
-     */
     function saveNewPatient() {
       if (
         newPatient.value.name &&
@@ -220,8 +274,7 @@ export default {
         newPatient.value.gender &&
         newPatient.value.dob
       ) {
-        // 환자리스트에 저장한 환자 객체 추가
-        patientList.value.push(
+        patientList.value.unshift(
           new Patient(
             newPatient.value.name,
             newPatient.value.id,
@@ -234,26 +287,28 @@ export default {
 
         resetNewPatient();
         activeStep.value = STEP;
+      } else {
+        showAlert.value = true;
+        setTimeout(() => {
+          showAlert.value = false;
+        }, 3000);
+        return;
       }
     }
 
-    /**
-     * @Description 사용자가 입력한 환자 정보를 초기화
-     * @return void
-     */
     function resetNewPatient() {
       newPatient.value.reset();
     }
 
-    /**
-     * @Description 환자 리스트에서 선택한 환자 정보를 가지고 케이스 생성 화면으로 이동
-     * @param patient, index
-     * @return void
-     */
     function createCase(patient: Patient, index: number) {
       newPatient.value = patient;
       patientList.value.splice(index, 1);
       activeStep.value++;
+    }
+
+    function onImageClick(slotNumber: number) {
+      console.log(`Slot ${slotNumber} clicked`);
+      // 필요한 동작을 추가할 수 있습니다.
     }
 
     return {
@@ -266,6 +321,10 @@ export default {
       today,
       showMouthStructure,
       createCase,
+      uploadedImage,
+      handleFileChangeAndLoad,
+      showAlert,
+      onImageClick,
     };
   },
 };
@@ -301,14 +360,29 @@ export default {
   font-size: 0.9rem !important;
 }
 
-/* three.js css 시작 */
-.drag-over {
-  border-color: #0cddcb;
-  background-color: #e0f7fa;
+/* three.js css 시작 임시로 이미지만 띄우고 있음*/
+.model-view-section {
+  width: 100%;
+  height: 500px;
+  display: flex;
+  border: 1px solid #0cddcb;
+  border-radius: 5px;
+  justify-content: center;
+  align-items: center;
 }
 
-.three-canvas {
+/* file select 시작*/
+.fixed-width-file-input {
   width: 100%;
-  height: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* 지그 선택 버튼 */
+.jig-slot {
+  height: auto;
+  width: 100%;
+  border: 1px solid #0cddcb;
+  border-radius: 5px;
 }
 </style>
