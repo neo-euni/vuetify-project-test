@@ -177,9 +177,7 @@
                         <v-card-title>Marker</v-card-title>
                         <v-card-text>
                           <div class="marker-section">
-                            <v-img
-                              src="@/assets/dot.png"
-                            </v-img>
+                            <v-img src="@/assets/dot.png"></v-img>
                           </div>
                         </v-card-text>
                       </v-card>
@@ -225,7 +223,28 @@
           <v-card title="Simulation" flat>...</v-card>
         </template>
         <template v-slot:item.4>
-          <v-card title="Detection" flat>...</v-card>
+          <v-card title="Detection" flat>
+            <v-card>
+              <v-card-text>
+                <v-row>
+                  <!-- detection-view -->
+                  <v-col cols="8">
+                    <div class="detection-view">
+                      <v-img src="@/assets/detection.png"></v-img>
+                    </div>
+                  </v-col>
+
+                  <!-- panoramic-view -->
+                  <v-col cols="4">
+                    <div class="panoramic-view"></div>
+                    <div class="panoramic-view"></div>
+                    <div class="panoramic-view"></div>
+                    <div class="panoramic-view"></div>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </v-card>
         </template>
         <template v-slot:item.5>
           <v-card title="Planning" flat>...</v-card>
@@ -464,5 +483,22 @@ export default {
   border: solid 1px #0cddcb;
   width: 100%;
   height: 16rem;
+}
+
+.detection-view {
+  width: 100%;
+  height: 50rem;
+  display: flex;
+  border-radius: 5px;
+  border: solid 1px #0cddcb;
+}
+
+.panoramic-view {
+  width: 100%;
+  height: 12rem;
+  display: flex;
+  border-radius: 5px;
+  border: solid 1px #0cddcb;
+  margin-bottom: 10px;
 }
 </style>
