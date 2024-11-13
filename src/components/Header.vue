@@ -176,7 +176,11 @@
                       <v-card>
                         <v-card-title>Marker</v-card-title>
                         <v-card-text>
-                          <div class="marker-section"></div>
+                          <div class="marker-section">
+                            <v-img
+                              src="@/assets/dot.png"
+                            </v-img>
+                          </div>
                         </v-card-text>
                       </v-card>
                     </v-col>
@@ -345,6 +349,8 @@ export default {
       selectedGuideImage.value = guideImages[slotNumber - 1];
     }
 
+    // 그림판 기능
+
     return {
       activeStep,
       createPatient,
@@ -454,8 +460,6 @@ export default {
 
 .marker-section {
   display: flex;
-  justify-content: center;
-  align-items: center;
   border-radius: 5px;
   border: solid 1px #0cddcb;
   width: 100%;
