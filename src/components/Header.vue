@@ -106,7 +106,7 @@
                     </v-form>
 
                     <!-- 알림 메시지 -->
-                    <v-alert v-if="showAlert" type="error" dense text>
+                    <v-alert v-if="showAlert" type="error" dense>
                       환자 필수 요소를 입력해주세요.
                     </v-alert>
                   </v-card-text>
@@ -130,11 +130,10 @@
               </v-col>
               <!-- import data영역 -->
               <v-col cols="6">
-                <v-card class="ml-8">
+                <v-card class="ml-4">
                   <v-card-title>Import Data</v-card-title>
                   <v-card-text>
                     <v-file-input
-                      id="fileInput-obj"
                       @change="handleFileChangeAndLoad"
                       label="Upload 3D Model (.obj)"
                       prepend-icon="mdi-file-upload"
@@ -178,6 +177,14 @@
                         <v-card-text>
                           <div class="marker-section">
                             <v-img src="@/assets/dot.png"></v-img>
+                            <canvas
+                              
+                              @mousedown="beginDrawing"
+                              @mousemove="keepDrawing"
+                              @mouseup="stopDrawing"
+                              ref="canvas"
+                            >
+                            </canvas>
                           </div>
                         </v-card-text>
                       </v-card>
@@ -188,7 +195,7 @@
 
               <!-- select guide & jig 영역 -->
               <v-col cols="3">
-                <v-card class="ml-8">
+                <v-card class="ml-4">
                   <v-card-title>Select Guide & Jig</v-card-title>
                   <v-card-text>
                     <v-row>
@@ -260,7 +267,7 @@
 </template>
 
 <script lang="ts">
-import { ref } from "vue";
+import { ref, onMounted,nextTick, watch } from 'vue';
 // 이미지 리스트 리소스 미리 로드
 import img1 from "@/assets/1-preview.png";
 import img2 from "@/assets/2-preview.png";
@@ -270,6 +277,7 @@ import img5 from "@/assets/5-preview.png";
 import img6 from "@/assets/6-preview.png";
 import img7 from "@/assets/7-preview.png";
 import img8 from "@/assets/8-preview.png";
+
 
 class Patient {
   name: string;
@@ -299,6 +307,7 @@ export default {
   setup() {
     const STEP: number = 1;
     const activeStep = ref(STEP);
+    // const activeStep = ref(2); TODO: 2를 활성화 시키면 그림판 기능 동작됨
     const patientList = ref([]);
     const newPatient = ref(new Patient());
     const today = ref(new Date().toISOString().split("T")[0]);
@@ -307,6 +316,71 @@ export default {
     const showAlert = ref(false);
     const guideImages = [img1, img2, img3, img4, img5, img6, img7, img8];
     const selectedGuideImage = ref<string | null>(null);
+    
+    // 그림판 기능
+    const canvas = ref<HTMLCanvasElement | null>(null);
+    const ctx = ref<CanvasRenderingContext2D | null>(null);
+    const x = ref(0);
+    const y = ref(0);
+    const isDrawing = ref(false);
+
+    function initializeCanvas() {
+      if (canvas.value) {
+        ctx.value = canvas.value.getContext("2d");
+        if (ctx.value) {
+          console.log("Canvas context initialized");
+        }
+      } else {
+        console.log("Canvas is still null after nextTick");
+      }
+    }
+
+    function drawLine(x1: number, y1: number, x2: number, y2: number) {
+      if (ctx.value) {
+        ctx.value.beginPath();
+        ctx.value.strokeStyle = "rgb(250, 146, 139)";
+        ctx.value.lineWidth = 2;
+        ctx.value.moveTo(x1, y1);
+        ctx.value.lineTo(x2, y2);
+        ctx.value.stroke();
+        ctx.value.closePath();
+      }
+    }
+
+    function beginDrawing(e: MouseEvent) {
+       x.value = e.offsetX;
+      y.value = e.offsetY;
+      isDrawing.value = true;
+    }
+
+    function keepDrawing(e: MouseEvent) {
+      if (isDrawing.value) {
+        drawLine(x.value, y.value, e.offsetX, e.offsetY);
+        x.value = e.offsetX;
+        y.value = e.offsetY;
+      }
+    }
+
+    function stopDrawing() {
+      isDrawing.value = false;
+    }
+
+    onMounted(async () => {
+      await nextTick();
+      if (activeStep.value === 2) {
+        initializeCanvas();
+      }
+    });
+
+    watch(activeStep, async (newStep:number) => {
+      if (newStep === 2) {
+        await nextTick();
+        initializeCanvas();
+      }
+    });
+
+
+
 
     function handleFileChangeAndLoad(event: Event) {
       const input = event.target as HTMLInputElement;
@@ -388,6 +462,12 @@ export default {
       onGuideImageClick,
       guideImages,
       selectedGuideImage,
+
+      // 그림판 기능
+      canvas,
+      beginDrawing,
+      keepDrawing,
+      stopDrawing,
     };
   },
 };
@@ -465,8 +545,11 @@ export default {
 }
 
 .image {
-  width: 12rem;
+  width: 10rem; /* 컨테이너의 너비에 맞추기 */
+  max-width: 12rem; /* 최대 너비 설정 */
+  max-height: 100%; /* 최대 높이 설정 */
   object-fit: contain;
+  
 }
 
 .bite-jig-view-img-section {
@@ -506,5 +589,11 @@ export default {
   flex: 1; /* 동일한 높이로 분배 */
   border-radius: 5px;
   border: solid 1px #0cddcb;
+}
+
+canvas {
+  cursor:crosshair;
+  width: 100%;
+  height: 100%;
 }
 </style>
