@@ -176,15 +176,16 @@
                         <v-card-title>Marker</v-card-title>
                         <v-card-text>
                           <div class="marker-section">
-                            <v-img src="@/assets/dot.png"></v-img>
-                            <canvas
-                              
+                            <!-- png file input -->
+                            <!-- <canvas
+                              width="100%"
+                              height="100%"
                               @mousedown="beginDrawing"
                               @mousemove="keepDrawing"
                               @mouseup="stopDrawing"
                               ref="canvas"
-                            >
-                            </canvas>
+                            ></canvas> -->
+                            <img src="@/assets/dot.png" alt="dot" width="100%" height="100%"/>
                           </div>
                         </v-card-text>
                       </v-card>
@@ -237,17 +238,34 @@
                   <!-- detection-view -->
                   <v-col cols="8">
                     <div class="detection-view">
-                      <v-img src="@/assets/detection.png"></v-img>
+                      <!-- <v-img src="@/assets/detection.png"></v-img> -->
+                      <canvas
+                        ref="detectionCanvas"
+                        width="800"
+                        height="600"
+                        @mousedown="beginDrawing"
+                        @mousemove="keepDrawing"
+                        @mouseup="stopDrawing"
+                      >
+                      </canvas>
                     </div>
                   </v-col>
 
                   <!-- panoramic-view -->
                   <v-col cols="4" >
                   <div class="panoramic-container">
-                    <div class="panoramic-view"></div>
-                    <div class="panoramic-view"></div>
-                    <div class="panoramic-view"></div>
-                    <div class="panoramic-view"></div>
+                    <div class="panoramic-view">
+                      <v-img src="@/assets/panoramic.png" width="100%" height="100%" cover></v-img>
+                    </div>
+                    <div class="panoramic-view">
+                      <v-img src="@/assets/axial.png" width="100%" height="100%" cover></v-img>
+                    </div>
+                    <div class="panoramic-view">
+                      <v-img src="@/assets/orthogonal.png" width="100%" height="100%" cover></v-img>
+                    </div>
+                    <div class="panoramic-view">
+                      <v-img src="@/assets/tangential.png" width="100%" height="100%" cover></v-img>
+                    </div>
                   </div>
                   </v-col>
                 </v-row>
@@ -255,6 +273,8 @@
             </v-card>
           </v-card>
         </template>
+
+
         <template v-slot:item.5>
           <v-card title="Planning" flat>...</v-card>
         </template>
@@ -277,6 +297,8 @@ import img5 from "@/assets/5-preview.png";
 import img6 from "@/assets/6-preview.png";
 import img7 from "@/assets/7-preview.png";
 import img8 from "@/assets/8-preview.png";
+// import dotImage from "@/assets/dot.png";
+
 
 
 class Patient {
@@ -285,13 +307,17 @@ class Patient {
   gender: string;
   dob: string;
   memo: string;
+  importData: string | null;
+  selectedGuide: string;
 
-  constructor(name = "", id = "", gender = "", dob = "", memo = "") {
+  constructor(name = "", id = "", gender = "", dob = "", memo = "", importData: string | null = null, selectedGuide = "") {
     this.name = name;
     this.id = id;
     this.gender = gender;
     this.dob = dob;
     this.memo = memo;
+    this.importData = importData || null;
+    this.selectedGuide = selectedGuide;
   }
 
   reset() {
@@ -300,6 +326,8 @@ class Patient {
     this.gender = "";
     this.dob = "";
     this.memo = "";
+    this.importData = null;
+    this.selectedGuide = "";
   }
 }
 
@@ -307,27 +335,46 @@ export default {
   setup() {
     const STEP: number = 1;
     const activeStep = ref(STEP);
-    // const activeStep = ref(2); TODO: 2를 활성화 시키면 그림판 기능 동작됨
-    const patientList = ref([]);
+    const patientList = ref<Patient[]>([]);
     const newPatient = ref(new Patient());
     const today = ref(new Date().toISOString().split("T")[0]);
     const showMouthStructure = ref(false);
     const uploadedImage = ref<string | null>(null);
     const showAlert = ref(false);
     const guideImages = [img1, img2, img3, img4, img5, img6, img7, img8];
-    const selectedGuideImage = ref<string | null>(null);
+    const selectedGuideImage = ref<string | null>(guideImages[0]);
     
     // 그림판 기능
-    const canvas = ref<HTMLCanvasElement | null>(null);
-    const ctx = ref<CanvasRenderingContext2D | null>(null);
+    const detectionCanvas = ref<HTMLCanvasElement | null>(null);
+    const detectionCtx = ref<CanvasRenderingContext2D | null>(null);
     const x = ref(0);
     const y = ref(0);
     const isDrawing = ref(false);
 
+    
+
+
+    // function initializeCanvas() {
+    //   if (detectionCanvas.value) {
+    //     detectionCtx.value = detectionCanvas.value.getContext("2d");
+    //     if (detectionCtx.value) {
+    //             console.log("Canvas context initialized");
+    //       const image = new Image();
+    //       image.src = dotImage;
+    //       image.onload = () => {
+    //         detectionCtx.value!.drawImage(image, 0, 0, detectionCanvas.value!.width, detectionCanvas.value!.height);
+    //       };
+    //     } else {
+    //       console.error('Failed to get 2D context');
+    //     }
+    //   } else {
+    //     console.error('Canvas not found');
+    //   }
+    // }
     function initializeCanvas() {
-      if (canvas.value) {
-        ctx.value = canvas.value.getContext("2d");
-        if (ctx.value) {
+      if (detectionCanvas.value) {
+        detectionCtx.value = detectionCanvas.value.getContext("2d");
+        if (detectionCanvas.value) {
           console.log("Canvas context initialized");
         }
       } else {
@@ -336,19 +383,19 @@ export default {
     }
 
     function drawLine(x1: number, y1: number, x2: number, y2: number) {
-      if (ctx.value) {
-        ctx.value.beginPath();
-        ctx.value.strokeStyle = "rgb(250, 146, 139)";
-        ctx.value.lineWidth = 2;
-        ctx.value.moveTo(x1, y1);
-        ctx.value.lineTo(x2, y2);
-        ctx.value.stroke();
-        ctx.value.closePath();
+      if (detectionCtx.value) {
+        detectionCtx.value.beginPath();
+        detectionCtx.value.strokeStyle = "rgb(250, 146, 139)";
+        detectionCtx.value.lineWidth = 4;
+        detectionCtx.value.moveTo(x1, y1);
+        detectionCtx.value.lineTo(x2, y2);
+        detectionCtx.value.stroke();
+        detectionCtx.value.closePath();
       }
     }
 
     function beginDrawing(e: MouseEvent) {
-       x.value = e.offsetX;
+      x.value = e.offsetX;
       y.value = e.offsetY;
       isDrawing.value = true;
     }
@@ -361,25 +408,25 @@ export default {
       }
     }
 
+    
     function stopDrawing() {
       isDrawing.value = false;
     }
 
+    
     onMounted(async () => {
       await nextTick();
-      if (activeStep.value === 2) {
+      if (activeStep.value === 4) {
         initializeCanvas();
       }
     });
 
-    watch(activeStep, async (newStep:number) => {
-      if (newStep === 2) {
+    watch(activeStep, async (newStep: number) => {
+      if (newStep === 4) {
         await nextTick();
         initializeCanvas();
       }
     });
-
-
 
 
     function handleFileChangeAndLoad(event: Event) {
@@ -400,32 +447,40 @@ export default {
       activeStep.value++;
     }
 
-    function saveNewPatient() {
-      if (
-        newPatient.value.name &&
-        newPatient.value.id &&
-        newPatient.value.gender &&
-        newPatient.value.dob
-      ) {
-        patientList.value.unshift(
-          new Patient(
-            newPatient.value.name,
-            newPatient.value.id,
-            newPatient.value.gender,
-            newPatient.value.dob,
-            newPatient.value.memo
-          )
-        );
-        showMouthStructure.value = true;
+    function isPatientInfoValid(patient: Patient) {
+      return patient.name && patient.id && patient.gender && patient.dob;
+    }
 
+    function addNewPatient(patient: Patient) {
+      patientList.value.unshift(
+        new Patient(
+          patient.name,
+          patient.id,
+          patient.gender,
+          patient.dob,
+          patient.memo,
+          patient.importData,
+          patient.selectedGuide
+        )
+      );
+    }
+
+    function showAlertMessage() {
+      showAlert.value = true;
+      setTimeout(() => {
+        showAlert.value = false;
+      }, 3000);
+    }
+
+    function saveNewPatient() {
+      if (isPatientInfoValid(newPatient.value)) {
+        addNewPatient(newPatient.value);
+        showMouthStructure.value = true;
         resetNewPatient();
         activeStep.value = STEP;
+        
       } else {
-        showAlert.value = true;
-        setTimeout(() => {
-          showAlert.value = false;
-        }, 3000);
-        return;
+        showAlertMessage();
       }
     }
 
@@ -464,7 +519,7 @@ export default {
       selectedGuideImage,
 
       // 그림판 기능
-      canvas,
+      detectionCanvas,
       beginDrawing,
       keepDrawing,
       stopDrawing,
@@ -577,6 +632,8 @@ export default {
   border-radius: 5px;
   border: solid 1px #0cddcb;
 }
+
+
 .panoramic-container {
   display: flex;
   flex-direction: column;
@@ -596,4 +653,7 @@ canvas {
   width: 100%;
   height: 100%;
 }
+
+
+
 </style>
