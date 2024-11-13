@@ -153,16 +153,33 @@
                     </div>
                   </v-card-text>
 
-                  <v-card-title>Bite Jig View</v-card-title>
-                  <v-card-text>
+                  <v-row>
                     <v-col cols="6">
-                      <div class="bite-jig-view-img-section"></div>
+                      <v-card>
+                        <v-card-title>Bite Jig View</v-card-title>
+                        <v-card-text class="bite-jig-view-img-section">
+                          <v-img
+                            v-if="selectedGuideImage"
+                            :src="selectedGuideImage"
+                            alt="Selected Guide Image"
+                            width="90%"
+                            height="90%"
+                            max-width="100%"
+                            max-height="100%"
+                            contain
+                          />
+                        </v-card-text>
+                      </v-card>
                     </v-col>
-                    <v-card-title>Marker</v-card-title>
                     <v-col cols="6">
-                      <div class="bite-jig-view-img-section"></div>
+                      <v-card>
+                        <v-card-title>Marker</v-card-title>
+                        <v-card-text>
+                          <div class="marker-section"></div>
+                        </v-card-text>
+                      </v-card>
                     </v-col>
-                  </v-card-text>
+                  </v-row>
                 </v-card>
               </v-col>
 
@@ -178,7 +195,7 @@
                           <v-card-text class="centered-image-container">
                             <v-btn
                               icon
-                              @click="onImageClick(n)"
+                              @click="onGuideImageClick(n)"
                               class="guide-image-btn"
                             >
                               <v-img
@@ -263,6 +280,7 @@ export default {
     const uploadedImage = ref<string | null>(null);
     const showAlert = ref(false);
     const guideImages = [img1, img2, img3, img4, img5, img6, img7, img8];
+    const selectedGuideImage = ref<string | null>(null);
 
     function handleFileChangeAndLoad(event: Event) {
       const input = event.target as HTMLInputElement;
@@ -321,9 +339,9 @@ export default {
       activeStep.value++;
     }
 
-    function onImageClick(slotNumber: number) {
+    function onGuideImageClick(slotNumber: number) {
       console.log(`Slot ${slotNumber} clicked`);
-      // 필요한 동작을 추가할 수 있습니다.
+      selectedGuideImage.value = guideImages[slotNumber - 1];
     }
 
     return {
@@ -339,8 +357,9 @@ export default {
       uploadedImage,
       handleFileChangeAndLoad,
       showAlert,
-      onImageClick,
+      onGuideImageClick,
       guideImages,
+      selectedGuideImage,
     };
   },
 };
@@ -423,9 +442,22 @@ export default {
 }
 
 .bite-jig-view-img-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border-radius: 5px;
   border: solid 1px #0cddcb;
-  width: 50%;
+  width: 100%;
+  height: 16rem;
+}
+
+.marker-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 5px;
+  border: solid 1px #0cddcb;
+  width: 100%;
   height: 16rem;
 }
 </style>
