@@ -316,7 +316,6 @@ import img5 from "@/assets/5-preview.png";
 import img6 from "@/assets/6-preview.png";
 import img7 from "@/assets/7-preview.png";
 import img8 from "@/assets/8-preview.png";
-// import dotImage from "@/assets/dot.png";
 
 class Patient {
   name: string;
@@ -324,7 +323,7 @@ class Patient {
   gender: string;
   dob: string;
   memo: string;
-  importData: string | null;
+  importData: string;
   selectedGuide: string;
 
   constructor(
@@ -333,7 +332,7 @@ class Patient {
     gender = "",
     dob = "",
     memo = "",
-    importData: string | null = null,
+    importData = "",
     selectedGuide = ""
   ) {
     this.name = name;
@@ -341,7 +340,7 @@ class Patient {
     this.gender = gender;
     this.dob = dob;
     this.memo = memo;
-    this.importData = importData || null;
+    this.importData = importData;
     this.selectedGuide = selectedGuide;
   }
 
@@ -351,7 +350,7 @@ class Patient {
     this.gender = "";
     this.dob = "";
     this.memo = "";
-    this.importData = null;
+    this.importData = "";
     this.selectedGuide = "";
   }
 }
@@ -361,13 +360,13 @@ export default {
     const STEP: number = 1;
     const activeStep = ref(STEP);
     const patientList = ref<Patient[]>([]);
-    const newPatient = ref(new Patient());
+    const newPatient = ref(new Patient("", "", "", "", "", "", ""));
     const today = ref(new Date().toISOString().split("T")[0]);
     const showMouthStructure = ref(false);
     const uploadedImage = ref<string | null>(null);
     const showAlert = ref(false);
     const guideImages = [img1, img2, img3, img4, img5, img6, img7, img8];
-    const selectedGuideImage = ref<string | null>(guideImages[0]);
+    const selectedGuideImage = ref<string | null>(null);
 
     // 그림판 기능
     const detectionCanvas = ref<HTMLCanvasElement | null>(null);
@@ -453,13 +452,6 @@ export default {
       isDrawing.value = false;
     }
 
-    // onMounted(async () => {
-    //   await nextTick();
-    //   if (activeStep.value === 4) {
-    //     initializeCanvas();
-    //   }
-    // });
-
     watch(activeStep, async (newStep: number) => {
       if (newStep === 4) {
         await nextTick();
@@ -477,7 +469,7 @@ export default {
         reader.onload = (e) => {
           uploadedImage.value = e.target?.result as string;
         };
-        reader.readAsDataURL(file); // 파일을 Data URL로 읽기
+        reader.readAsDataURL(file);
       }
     }
 
@@ -503,13 +495,6 @@ export default {
       );
     }
 
-    function showAlertMessage() {
-      showAlert.value = true;
-      setTimeout(() => {
-        showAlert.value = false;
-      }, 3000);
-    }
-
     function saveNewPatient() {
       if (isPatientInfoValid(newPatient.value)) {
         addNewPatient(newPatient.value);
@@ -521,8 +506,17 @@ export default {
       }
     }
 
+    function showAlertMessage() {
+      showAlert.value = true;
+      setTimeout(() => {
+        showAlert.value = false;
+      }, 3000);
+    }
+
     function resetNewPatient() {
       newPatient.value.reset();
+      uploadedImage.value = null;
+      selectedGuideImage.value = null;
     }
 
     function createCase(patient: Patient, index: number) {
