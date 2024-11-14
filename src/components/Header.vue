@@ -241,7 +241,7 @@
               <v-card-text>
                 <v-row class="detection-step">
                   <!-- detection-view -->
-                  <v-col cols="9" class="detection-col">
+                  <v-col cols="9">
                     <div class="detection-view">
                       <!-- <v-img src="@/assets/detection.png"></v-img> -->
                       <canvas
@@ -256,7 +256,7 @@
                   </v-col>
 
                   <!-- panoramic-view -->
-                  <v-col cols="3" class="detection-col">
+                  <v-col cols="3">
                     <div class="panoramic-container">
                       <div class="panoramic-view">
                         <v-img
@@ -306,7 +306,7 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted, nextTick, watch } from "vue";
+import { ref, nextTick, watch } from "vue";
 // 이미지 리스트 리소스 미리 로드
 import img1 from "@/assets/1-preview.png";
 import img2 from "@/assets/2-preview.png";
@@ -414,7 +414,7 @@ export default {
     function drawLine(x1: number, y1: number, x2: number, y2: number) {
       if (detectionCtx.value) {
         detectionCtx.value.beginPath();
-        detectionCtx.value.strokeStyle = "#D54D2A";
+        detectionCtx.value.strokeStyle = "#0CDDCB";
         detectionCtx.value.lineWidth = 5;
         detectionCtx.value.moveTo(x1, y1);
         detectionCtx.value.lineTo(x2, y2);
@@ -453,12 +453,12 @@ export default {
       isDrawing.value = false;
     }
 
-    onMounted(async () => {
-      await nextTick();
-      if (activeStep.value === 4) {
-        initializeCanvas();
-      }
-    });
+    // onMounted(async () => {
+    //   await nextTick();
+    //   if (activeStep.value === 4) {
+    //     initializeCanvas();
+    //   }
+    // });
 
     watch(activeStep, async (newStep: number) => {
       if (newStep === 4) {
@@ -532,7 +532,7 @@ export default {
     }
 
     function onGuideImageClick(slotNumber: number) {
-      console.log(`Slot ${slotNumber} clicked`);
+      // console.log(`Slot ${slotNumber} clicked`);
       selectedGuideImage.value = guideImages[slotNumber - 1];
     }
 
@@ -663,17 +663,13 @@ export default {
 
 .detection-step {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
   width: 100%;
-}
-
-.detection-col {
-  height: 100%;
+  height: 70vh;
 }
 
 .detection-view {
   width: 100%;
-  height: 100%;
   display: flex;
   border-radius: 5px;
   border: solid 1px #0cddcb;
@@ -682,15 +678,14 @@ export default {
 .panoramic-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
   width: 100%;
   height: 100%;
+  gap: 8px;
 }
 
 .panoramic-view {
   width: 100%;
   height: 100%;
-  flex: 1;
   border-radius: 5px;
   border: solid 1px #0cddcb;
 }
