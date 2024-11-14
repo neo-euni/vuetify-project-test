@@ -30,7 +30,7 @@
                   v-for="(patient, index) in patientList"
                   :key="index"
                   link
-                  @click="createCase(patient, index)"
+                  @click="loadPatientCase(patient, index)"
                 >
                   <v-list-item-content>
                     <v-list-item-title>{{ patient.name }}</v-list-item-title>
@@ -323,7 +323,7 @@ class Patient {
   gender: string;
   dob: string;
   memo: string;
-  importData: string;
+  importData: File | null;
   selectedGuide: string;
 
   constructor(
@@ -332,8 +332,8 @@ class Patient {
     gender = "",
     dob = "",
     memo = "",
-    importData = "",
-    selectedGuide = ""
+    importData: File | null = null,
+    selectedGuide: string = ""
   ) {
     this.name = name;
     this.id = id;
@@ -350,7 +350,7 @@ class Patient {
     this.gender = "";
     this.dob = "";
     this.memo = "";
-    this.importData = "";
+    this.importData = null;
     this.selectedGuide = "";
   }
 }
@@ -360,10 +360,10 @@ export default {
     const STEP: number = 1;
     const activeStep = ref(STEP);
     const patientList = ref<Patient[]>([]);
-    const newPatient = ref(new Patient("", "", "", "", "", "", ""));
+    const newPatient = ref(new Patient());
     const today = ref(new Date().toISOString().split("T")[0]);
     const showMouthStructure = ref(false);
-    const uploadedImage = ref<string | null>(null);
+    const uploadedImage = ref<File | null>(null);
     const showAlert = ref(false);
     const guideImages = [img1, img2, img3, img4, img5, img6, img7, img8];
     const selectedGuideImage = ref<string | null>(null);
@@ -475,6 +475,7 @@ export default {
 
     function createPatient(event: Event) {
       activeStep.value++;
+      resetNewPatient();
     }
 
     function isPatientInfoValid(patient: Patient) {
@@ -497,6 +498,9 @@ export default {
 
     function saveNewPatient() {
       if (isPatientInfoValid(newPatient.value)) {
+        newPatient.value.importData = uploadedImage.value;
+        newPatient.value.selectedGuide = selectedGuideImage.value || "";
+
         addNewPatient(newPatient.value);
         showMouthStructure.value = true;
         resetNewPatient();
@@ -515,12 +519,14 @@ export default {
 
     function resetNewPatient() {
       newPatient.value.reset();
+      newPatient.value.importData = null;
       uploadedImage.value = null;
-      selectedGuideImage.value = null;
     }
 
-    function createCase(patient: Patient, index: number) {
+    function loadPatientCase(patient: Patient, index: number) {
       newPatient.value = patient;
+      uploadedImage.value = patient.importData;
+      selectedGuideImage.value = patient.selectedGuide;
       patientList.value.splice(index, 1);
       activeStep.value++;
     }
@@ -541,7 +547,7 @@ export default {
       resetNewPatient,
       today,
       showMouthStructure,
-      createCase,
+      loadPatientCase,
       uploadedImage,
       handleFileChangeAndLoad,
       showAlert,
