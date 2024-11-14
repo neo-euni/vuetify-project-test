@@ -185,7 +185,12 @@
                               @mouseup="stopDrawing"
                               ref="canvas"
                             ></canvas> -->
-                            <img src="@/assets/dot.png" alt="dot" width="100%" height="100%"/>
+                            <img
+                              src="@/assets/dot.png"
+                              alt="dot"
+                              width="100%"
+                              height="100%"
+                            />
                           </div>
                         </v-card-text>
                       </v-card>
@@ -213,7 +218,7 @@
                                 v-if="guideImages && guideImages[n - 1]"
                                 :src="guideImages[n - 1]"
                                 alt="guideImages"
-                                class="image"
+                                class="guide-image"
                               ></v-img>
                             </v-btn>
                           </v-card-text>
@@ -234,46 +239,60 @@
           <v-card title="Detection" flat>
             <v-card>
               <v-card-text>
-                <v-row>
+                <v-row class="detection-step">
                   <!-- detection-view -->
-                  <v-col cols="8">
+                  <v-col cols="9" class="detection-col">
                     <div class="detection-view">
                       <!-- <v-img src="@/assets/detection.png"></v-img> -->
                       <canvas
                         ref="detectionCanvas"
-                        width="800"
-                        height="600"
                         @mousedown="beginDrawing"
                         @mousemove="keepDrawing"
                         @mouseup="stopDrawing"
+                        @mouseout="stopDrawing"
                       >
                       </canvas>
                     </div>
                   </v-col>
 
                   <!-- panoramic-view -->
-                  <v-col cols="4" >
-                  <div class="panoramic-container">
-                    <div class="panoramic-view">
-                      <v-img src="@/assets/panoramic.png" width="100%" height="100%" cover></v-img>
+                  <v-col cols="3" class="detection-col">
+                    <div class="panoramic-container">
+                      <div class="panoramic-view">
+                        <v-img
+                          src="@/assets/panoramic.png"
+                          width="100%"
+                          height="100%"
+                        ></v-img>
+                      </div>
+                      <div class="panoramic-view">
+                        <v-img
+                          src="@/assets/axial.png"
+                          width="100%"
+                          height="100%"
+                        ></v-img>
+                      </div>
+                      <div class="panoramic-view">
+                        <v-img
+                          src="@/assets/orthogonal.png"
+                          width="100%"
+                          height="100%"
+                        ></v-img>
+                      </div>
+                      <div class="panoramic-view">
+                        <v-img
+                          src="@/assets/tangential.png"
+                          width="100%"
+                          height="100%"
+                        ></v-img>
+                      </div>
                     </div>
-                    <div class="panoramic-view">
-                      <v-img src="@/assets/axial.png" width="100%" height="100%" cover></v-img>
-                    </div>
-                    <div class="panoramic-view">
-                      <v-img src="@/assets/orthogonal.png" width="100%" height="100%" cover></v-img>
-                    </div>
-                    <div class="panoramic-view">
-                      <v-img src="@/assets/tangential.png" width="100%" height="100%" cover></v-img>
-                    </div>
-                  </div>
                   </v-col>
                 </v-row>
               </v-card-text>
             </v-card>
           </v-card>
         </template>
-
 
         <template v-slot:item.5>
           <v-card title="Planning" flat>...</v-card>
@@ -287,7 +306,7 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted,nextTick, watch } from 'vue';
+import { ref, onMounted, nextTick, watch } from "vue";
 // 이미지 리스트 리소스 미리 로드
 import img1 from "@/assets/1-preview.png";
 import img2 from "@/assets/2-preview.png";
@@ -299,8 +318,6 @@ import img7 from "@/assets/7-preview.png";
 import img8 from "@/assets/8-preview.png";
 // import dotImage from "@/assets/dot.png";
 
-
-
 class Patient {
   name: string;
   id: string;
@@ -310,7 +327,15 @@ class Patient {
   importData: string | null;
   selectedGuide: string;
 
-  constructor(name = "", id = "", gender = "", dob = "", memo = "", importData: string | null = null, selectedGuide = "") {
+  constructor(
+    name = "",
+    id = "",
+    gender = "",
+    dob = "",
+    memo = "",
+    importData: string | null = null,
+    selectedGuide = ""
+  ) {
     this.name = name;
     this.id = id;
     this.gender = gender;
@@ -343,7 +368,7 @@ export default {
     const showAlert = ref(false);
     const guideImages = [img1, img2, img3, img4, img5, img6, img7, img8];
     const selectedGuideImage = ref<string | null>(guideImages[0]);
-    
+
     // 그림판 기능
     const detectionCanvas = ref<HTMLCanvasElement | null>(null);
     const detectionCtx = ref<CanvasRenderingContext2D | null>(null);
@@ -351,42 +376,46 @@ export default {
     const y = ref(0);
     const isDrawing = ref(false);
 
-    
-
-
-    // function initializeCanvas() {
-    //   if (detectionCanvas.value) {
-    //     detectionCtx.value = detectionCanvas.value.getContext("2d");
-    //     if (detectionCtx.value) {
-    //             console.log("Canvas context initialized");
-    //       const image = new Image();
-    //       image.src = dotImage;
-    //       image.onload = () => {
-    //         detectionCtx.value!.drawImage(image, 0, 0, detectionCanvas.value!.width, detectionCanvas.value!.height);
-    //       };
-    //     } else {
-    //       console.error('Failed to get 2D context');
-    //     }
-    //   } else {
-    //     console.error('Canvas not found');
-    //   }
-    // }
     function initializeCanvas() {
       if (detectionCanvas.value) {
+        console.log("Canvas context initialized");
         detectionCtx.value = detectionCanvas.value.getContext("2d");
-        if (detectionCanvas.value) {
-          console.log("Canvas context initialized");
+
+        setCanvasDimensions(detectionCanvas.value);
+
+        if (detectionCtx.value) {
+          scaleCanvasForHighResolution(
+            detectionCanvas.value,
+            detectionCtx.value
+          );
         }
       } else {
         console.log("Canvas is still null after nextTick");
       }
     }
 
+    function scaleCanvasForHighResolution(
+      canvas: HTMLCanvasElement,
+      ctx: CanvasRenderingContext2D
+    ) {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = canvas.clientWidth * dpr;
+      canvas.height = canvas.clientHeight * dpr;
+      ctx.scale(dpr, dpr);
+    }
+
+    function setCanvasDimensions(canvas: HTMLCanvasElement) {
+      const canvasWidth = canvas.clientWidth;
+      const canvasHeight = canvas.clientHeight;
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+    }
+
     function drawLine(x1: number, y1: number, x2: number, y2: number) {
       if (detectionCtx.value) {
         detectionCtx.value.beginPath();
-        detectionCtx.value.strokeStyle = "rgb(250, 146, 139)";
-        detectionCtx.value.lineWidth = 4;
+        detectionCtx.value.strokeStyle = "#D54D2A";
+        detectionCtx.value.lineWidth = 5;
         detectionCtx.value.moveTo(x1, y1);
         detectionCtx.value.lineTo(x2, y2);
         detectionCtx.value.stroke();
@@ -394,26 +423,36 @@ export default {
       }
     }
 
+    function getMousePos(e: MouseEvent) {
+      const rect = detectionCanvas.value.getBoundingClientRect();
+      const scaleX = detectionCanvas.value.width / rect.width;
+      const scaleY = detectionCanvas.value.height / rect.height;
+      return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY,
+      };
+    }
+
     function beginDrawing(e: MouseEvent) {
-      x.value = e.offsetX;
-      y.value = e.offsetY;
+      const pos = getMousePos(e);
+      x.value = pos.x;
+      y.value = pos.y;
       isDrawing.value = true;
     }
 
     function keepDrawing(e: MouseEvent) {
       if (isDrawing.value) {
-        drawLine(x.value, y.value, e.offsetX, e.offsetY);
-        x.value = e.offsetX;
-        y.value = e.offsetY;
+        const pos = getMousePos(e);
+        drawLine(x.value, y.value, pos.x, pos.y);
+        x.value = pos.x;
+        y.value = pos.y;
       }
     }
 
-    
     function stopDrawing() {
       isDrawing.value = false;
     }
 
-    
     onMounted(async () => {
       await nextTick();
       if (activeStep.value === 4) {
@@ -427,7 +466,6 @@ export default {
         initializeCanvas();
       }
     });
-
 
     function handleFileChangeAndLoad(event: Event) {
       const input = event.target as HTMLInputElement;
@@ -478,7 +516,6 @@ export default {
         showMouthStructure.value = true;
         resetNewPatient();
         activeStep.value = STEP;
-        
       } else {
         showAlertMessage();
       }
@@ -599,12 +636,11 @@ export default {
   align-items: center;
 }
 
-.image {
+.guide-image {
   width: 10rem; /* 컨테이너의 너비에 맞추기 */
   max-width: 12rem; /* 최대 너비 설정 */
   max-height: 100%; /* 최대 높이 설정 */
   object-fit: contain;
-  
 }
 
 .bite-jig-view-img-section {
@@ -625,39 +661,46 @@ export default {
   height: 16rem;
 }
 
+.detection-step {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.detection-col {
+  height: 100%;
+}
+
 .detection-view {
   width: 100%;
-  height: 45rem;
+  height: 100%;
   display: flex;
   border-radius: 5px;
   border: solid 1px #0cddcb;
 }
 
-
 .panoramic-container {
   display: flex;
   flex-direction: column;
-  height: 45rem;
   gap: 20px;
+  width: 100%;
+  height: 100%;
 }
 
 .panoramic-view {
   width: 100%;
-  flex: 1; /* 동일한 높이로 분배 */
+  height: 100%;
+  flex: 1;
   border-radius: 5px;
   border: solid 1px #0cddcb;
 }
 
 canvas {
-  cursor:crosshair;
-  width: 100%;
-  height: 100%;
-  background-image: url('@/assets/detection.png');
+  cursor: crosshair;
+  background-image: url("@/assets/detection.png");
   background-position: center; /* 배경 이미지를 중앙에 위치 */
-  background-size: contain; /* 배경 이미지가 요소의 크기에 맞게 조정되도록 설정 */
+  background-size: cover; /* 배경 이미지가 요소의 크기에 맞게 조정되도록 설정 */
   background-repeat: no-repeat; /* 배경 이미지 반복 없음 */
+  width: 100%;
 }
-
-
-
 </style>
