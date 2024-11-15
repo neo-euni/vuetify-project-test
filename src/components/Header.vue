@@ -1,6 +1,20 @@
 <template>
   <v-app>
     <v-container>
+      <v-btn
+        @click="toggleTheme"
+        class="theme-toggle-btn"
+        :color="isDarkTheme ? 'secondary' : 'primary'"
+        dark
+        elevation="8"
+      >
+        {{ isDarkTheme ? "Light Mode" : "Dark Mode" }}
+        &nbsp;
+        <v-icon>{{
+          isDarkTheme ? "mdi-weather-sunny" : "mdi-weather-night"
+        }}</v-icon>
+      </v-btn>
+
       <v-stepper
         v-model="activeStep"
         alt-labels
@@ -13,6 +27,7 @@
           'Planning',
           'Guide',
         ]"
+        class="mt-15"
       >
         <!-- Home 단계 -->
         <template v-slot:item.1>
@@ -306,7 +321,8 @@
 </template>
 
 <script lang="ts">
-import { ref, nextTick, watch } from "vue";
+import { ref, nextTick, watch, computed } from "vue";
+import { useTheme } from "vuetify";
 // 이미지 리스트 리소스 미리 로드
 import img1 from "@/assets/1-preview.png";
 import img2 from "@/assets/2-preview.png";
@@ -363,10 +379,22 @@ export default {
     const newPatient = ref(new Patient());
     const today = ref(new Date().toISOString().split("T")[0]);
     const showMouthStructure = ref(false);
-    const uploadedImage = ref<string | null>(null);
+    const uploadedImage = ref<File | null>(null);
     const showAlert = ref(false);
     const guideImages = [img1, img2, img3, img4, img5, img6, img7, img8];
     const selectedGuideImage = ref<string | null>(null);
+    const theme = useTheme();
+
+    // 현재 테마 이름
+    const themeName = computed(() => theme.global.name.value);
+
+    // 다크모드 여부 확인
+    const isDarkTheme = computed(() => themeName.value === "dark");
+
+    // 테마 전환
+    const toggleTheme = () => {
+      theme.global.name.value = isDarkTheme.value ? "light" : "dark";
+    };
 
     // 그림판 기능
     const detectionCanvas = ref<HTMLCanvasElement | null>(null);
@@ -400,7 +428,8 @@ export default {
       const dpr = window.devicePixelRatio || 1;
       canvas.width = canvas.clientWidth * dpr;
       canvas.height = canvas.clientHeight * dpr;
-      ctx.scale(dpr, dpr);
+      // ctx.scale(dpr, dpr);
+      ctx.scale(1, 1);
     }
 
     function setCanvasDimensions(canvas: HTMLCanvasElement) {
@@ -555,6 +584,11 @@ export default {
       guideImages,
       selectedGuideImage,
 
+      // 테마변경
+      themeName,
+      isDarkTheme,
+      toggleTheme,
+
       // 그림판 기능
       detectionCanvas,
       beginDrawing,
@@ -697,5 +731,21 @@ canvas {
   background-size: cover; /* 배경 이미지가 요소의 크기에 맞게 조정되도록 설정 */
   background-repeat: no-repeat; /* 배경 이미지 반복 없음 */
   width: 100%;
+}
+
+.theme-toggle-btn {
+  position: fixed;
+  top: 20px;
+  right: 50px;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-weight: bold;
+  font-size: 10px;
+  transition: all 0.3s ease-in-out;
+}
+
+.theme-toggle-btn:hover {
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  transform: translateY(-3px);
 }
 </style>
