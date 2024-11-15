@@ -363,7 +363,7 @@ export default {
     const newPatient = ref(new Patient());
     const today = ref(new Date().toISOString().split("T")[0]);
     const showMouthStructure = ref(false);
-    const uploadedImage = ref<File | null>(null);
+    const uploadedImage = ref<string | null>(null);
     const showAlert = ref(false);
     const guideImages = [img1, img2, img3, img4, img5, img6, img7, img8];
     const selectedGuideImage = ref<string | null>(null);
