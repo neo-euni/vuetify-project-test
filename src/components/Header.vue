@@ -151,6 +151,7 @@
                       v-model="selectedFileName"
                       @change="handleFileChangeAndLoad"
                       label="Upload 3D Model (.obj)"
+                      density="compact"
                       prepend-icon="mdi-file-upload"
                       outlined
                       dense
@@ -629,10 +630,6 @@ export default {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-}
-
-::v-deep .v-text-field input {
-  font-size: 0.9rem !important;
 }
 
 /* three.js css 시작 임시로 이미지만 띄우고 있음*/
