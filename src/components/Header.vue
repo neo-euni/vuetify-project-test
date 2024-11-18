@@ -148,6 +148,7 @@
                   <v-card-title>Import Data</v-card-title>
                   <v-card-text>
                     <v-file-input
+                      v-model="selectedFileName"
                       @change="handleFileChangeAndLoad"
                       label="Upload 3D Model (.obj)"
                       prepend-icon="mdi-file-upload"
@@ -382,6 +383,7 @@ export default {
     const showAlert = ref(false);
     const guideImages = [img1, img2, img3, img4, img5, img6, img7, img8];
     const selectedGuideImage = ref<string | null>(null);
+    const selectedFileName = ref<string | null>(null);
 
     //테마 변경
     const theme = useTheme();
@@ -488,27 +490,33 @@ export default {
       }
     });
 
+    function convertFileToUrl(file: File) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        uploadedImage.value = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+
     function handleFileChangeAndLoad(event: Event) {
       const input = event.target as HTMLInputElement;
       const file = input.files ? input.files[0] : null;
 
       if (file) {
-        // FileReader를 사용하여 이미지 파일을 URL로 변환
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          uploadedImage.value = e.target?.result as string;
-        };
-        reader.readAsDataURL(file);
+        uploadedImage.value = file;
+        convertFileToUrl(file);
       }
     }
 
-    function createPatient(event: Event) {
+    function createPatient() {
       activeStep.value++;
       cancelNewPatient();
     }
 
-    function isPatientInfoValid(patient: Patient) {
-      return patient.name && patient.id && patient.gender && patient.dob;
+    function cancelNewPatient() {
+      newPatient.value.reset();
+      uploadedImage.value = null;
+      selectedFileName.value = null;
     }
 
     function addNewPatient(patient: Patient) {
@@ -525,18 +533,8 @@ export default {
       );
     }
 
-    function saveNewPatient() {
-      if (isPatientInfoValid(newPatient.value)) {
-        newPatient.value.importData = uploadedImage.value;
-        newPatient.value.selectedGuide = selectedGuideImage.value || "";
-
-        addNewPatient(newPatient.value);
-        showMouthStructure.value = true;
-        cancelNewPatient();
-        activeStep.value = STEP;
-      } else {
-        showAlertMessage();
-      }
+    function isPatientInfoValid(patient: Patient) {
+      return patient.name && patient.id && patient.gender && patient.dob;
     }
 
     function showAlertMessage() {
@@ -546,10 +544,17 @@ export default {
       }, 3000);
     }
 
-    function cancelNewPatient() {
-      newPatient.value.reset();
-      newPatient.value.importData = null;
-      uploadedImage.value = null;
+    function saveNewPatient() {
+      if (isPatientInfoValid(newPatient.value)) {
+        newPatient.value.importData = uploadedImage.value;
+        newPatient.value.selectedGuide = selectedGuideImage.value || "";
+
+        addNewPatient(newPatient.value);
+        showMouthStructure.value = true;
+        activeStep.value = STEP;
+      } else {
+        showAlertMessage();
+      }
     }
 
     function loadPatientCase(patient: Patient, index: number) {
@@ -583,6 +588,7 @@ export default {
       onGuideImageClick,
       guideImages,
       selectedGuideImage,
+      selectedFileName,
 
       // 테마변경
       isDarkMode,
