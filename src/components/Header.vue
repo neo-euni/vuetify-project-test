@@ -451,7 +451,7 @@ export default {
       }
     }
 
-    function getMousePos(e: MouseEvent) {
+    function getMousePosition(e: MouseEvent) {
       const rect = detectionCanvas.value.getBoundingClientRect();
       const scaleX = detectionCanvas.value.width / rect.width;
       const scaleY = detectionCanvas.value.height / rect.height;
@@ -462,7 +462,7 @@ export default {
     }
 
     function beginDrawing(e: MouseEvent) {
-      const pos = getMousePos(e);
+      const pos = getMousePosition(e);
       x.value = pos.x;
       y.value = pos.y;
       isDrawing.value = true;
@@ -470,7 +470,7 @@ export default {
 
     function keepDrawing(e: MouseEvent) {
       if (isDrawing.value) {
-        const pos = getMousePos(e);
+        const pos = getMousePosition(e);
         drawLine(x.value, y.value, pos.x, pos.y);
         x.value = pos.x;
         y.value = pos.y;
