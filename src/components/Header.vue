@@ -113,7 +113,7 @@
                         <v-btn class="save-btn" @click="saveNewPatient"
                           >Save</v-btn
                         >
-                        <v-btn class="cancel-btn" @click="resetNewPatient"
+                        <v-btn class="cancel-btn" @click="cancelNewPatient"
                           >Cancel</v-btn
                         >
                       </div>
@@ -504,7 +504,7 @@ export default {
 
     function createPatient(event: Event) {
       activeStep.value++;
-      resetNewPatient();
+      cancelNewPatient();
     }
 
     function isPatientInfoValid(patient: Patient) {
@@ -532,7 +532,7 @@ export default {
 
         addNewPatient(newPatient.value);
         showMouthStructure.value = true;
-        resetNewPatient();
+        cancelNewPatient();
         activeStep.value = STEP;
       } else {
         showAlertMessage();
@@ -546,7 +546,7 @@ export default {
       }, 3000);
     }
 
-    function resetNewPatient() {
+    function cancelNewPatient() {
       newPatient.value.reset();
       newPatient.value.importData = null;
       uploadedImage.value = null;
@@ -573,7 +573,7 @@ export default {
       patientList,
       newPatient,
       saveNewPatient,
-      resetNewPatient,
+      cancelNewPatient,
       today,
       showMouthStructure,
       loadPatientCase,
