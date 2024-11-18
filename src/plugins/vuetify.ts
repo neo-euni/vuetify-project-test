@@ -13,16 +13,19 @@ export default createVuetify({
       light: {
         dark: false,
         colors: {
-          borderColor: "#6200ee",
-          background: "dddddd",
-          button: "6200ee",
+          borderColor: "#1064A4",
+          background: "#DFD5C0",
+          button: "#A0E0CC",
+          cancelButton: "#EAE5FF",
         },
       },
       dark: {
         dark: true,
         colors: {
+          background: "#121212",
           borderColor: "#03dac6",
-          button: "03dac6",
+          button: "#03dac6",
+          cancelButton: "#FF968F",
         },
       },
     },

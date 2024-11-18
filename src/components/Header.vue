@@ -26,7 +26,7 @@
           'Planning',
           'Guide',
         ]"
-        class="mt-15"
+        class="mt-15 header-stepper"
       >
         <!-- Home 단계 -->
         <template v-slot:item.1>
@@ -136,7 +136,10 @@
                         max-width="100%"
                         height="30rem"
                         contain
-                        style="border: solid 1px #0cddcb; border-radius: 5px"
+                        style="
+                          border: solid 1px rgb(var(--v-theme-borderColor));
+                          border-radius: 5px;
+                        "
                       ></v-img>
                     </v-col>
                   </v-row>
@@ -219,9 +222,67 @@
               <v-col cols="3">
                 <v-card class="ml-4">
                   <v-card-title>Select Guide & Jig</v-card-title>
-                  <v-card-text>
+                  <v-card>
+                    <v-tabs v-model="activeTab" fixed-tabs>
+                      <v-tab :value="1">Pre-Guide</v-tab>
+                      <v-tab :value="2">Bite Jig</v-tab>
+                    </v-tabs>
+
+                    <v-window v-model="activeTab">
+                      <v-window-item
+                        v-for="tabValue in [1, 2]"
+                        :key="tabValue"
+                        :value="tabValue"
+                      >
+                        <v-card-text>
+                          <v-row>
+                            <v-col
+                              cols="6"
+                              v-for="n in 8"
+                              :key="n"
+                              class="grid-item"
+                            >
+                              <v-card outlined class="jig-slot">
+                                <v-card-text class="centered-image-container">
+                                  <v-btn
+                                    icon
+                                    @click="
+                                      tabValue === 1
+                                        ? onGuideImageClick(n)
+                                        : onJigImageClick(n)
+                                    "
+                                    class="guide-image-btn"
+                                  >
+                                    <v-img
+                                      v-if="
+                                        tabValue === 1
+                                          ? guideImages?.[n - 1]
+                                          : jigImages?.[n - 1]
+                                      "
+                                      :src="
+                                        tabValue === 1
+                                          ? guideImages[n - 1]
+                                          : jigImages[n - 1]
+                                      "
+                                      :alt="
+                                        tabValue === 1
+                                          ? 'guideImages'
+                                          : 'jigImages'
+                                      "
+                                      class="guide-image"
+                                    ></v-img>
+                                  </v-btn>
+                                </v-card-text>
+                              </v-card>
+                            </v-col>
+                          </v-row>
+                        </v-card-text>
+                      </v-window-item>
+                    </v-window>
+                  </v-card>
+                  <!-- guide select 영역 -->
+                  <!-- <v-card-text>
                     <v-row>
-                      <!-- 4행 2열 그리드 레이아웃 생성 -->
                       <v-col cols="6" v-for="n in 8" :key="n" class="grid-item">
                         <v-card outlined class="jig-slot">
                           <v-card-text class="centered-image-container">
@@ -241,7 +302,7 @@
                         </v-card>
                       </v-col>
                     </v-row>
-                  </v-card-text>
+                  </v-card-text> -->
                 </v-card>
               </v-col>
             </v-row>
@@ -385,6 +446,8 @@ export default {
     const guideImages = [img1, img2, img3, img4, img5, img6, img7, img8];
     const selectedGuideImage = ref<string | null>(null);
     const selectedFileName = ref<string | null>(null);
+    const selctedGuideAndJigCase: number = 1;
+    const activeTab = ref(selctedGuideAndJigCase);
 
     //테마 변경
     const theme = useTheme();
@@ -491,6 +554,9 @@ export default {
       }
     });
 
+    // tabs 기능
+
+    // file 변환 기능
     function convertFileToUrl(file: File) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -601,12 +667,16 @@ export default {
       beginDrawing,
       keepDrawing,
       stopDrawing,
+      activeTab,
     };
   },
 };
 </script>
 
 <style scoped>
+.header-stepper {
+  border-radius: 5px;
+}
 .new-patient-btn {
   padding: 4px 8px;
   font-size: 10px;
@@ -623,7 +693,7 @@ export default {
 .cancel-btn {
   font-size: 10px;
   padding: 4px 8px;
-  border: solid 1px rgb(250, 146, 139);
+  border: solid 1px rgb(var(--v-theme-cancelButton));
 }
 
 .new-patient-btns {
@@ -652,7 +722,7 @@ export default {
 
 /* 지그 선택 버튼 */
 .jig-slot {
-  height: 13rem;
+  height: 12rem;
   width: 100%;
   border: 1px solid rgb(var(--v-theme-borderColor));
   border-radius: 5px;
@@ -687,7 +757,7 @@ export default {
   border-radius: 5px;
   border: solid 1px rgb(var(--v-theme-borderColor));
   width: 100%;
-  height: 16rem;
+  height: 17rem;
 }
 
 .marker-section {
@@ -695,7 +765,7 @@ export default {
   border-radius: 5px;
   border: solid 1px rgb(var(--v-theme-borderColor));
   width: 100%;
-  height: 16rem;
+  height: 17rem;
 }
 
 .detection-step {
@@ -717,7 +787,7 @@ export default {
   grid-template-rows: 1fr, 1fr;
   width: 100%;
   height: 100%;
-  gap: 8px;
+  gap: 10px;
 }
 
 .panoramic-view {
