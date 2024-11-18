@@ -4,14 +4,13 @@
       <v-btn
         @click="toggleTheme"
         class="theme-toggle-btn"
-        :color="isDarkTheme ? 'secondary' : 'primary'"
-        dark
+        :color="isDarkMode ? 'button' : 'button'"
         elevation="8"
       >
-        {{ isDarkTheme ? "Light Mode" : "Dark Mode" }}
+        {{ isDarkMode ? "Light Mode" : "Dark Mode" }}
         &nbsp;
         <v-icon>{{
-          isDarkTheme ? "mdi-weather-sunny" : "mdi-weather-night"
+          isDarkMode ? "mdi-weather-sunny" : "mdi-weather-night"
         }}</v-icon>
       </v-btn>
 
@@ -379,22 +378,23 @@ export default {
     const newPatient = ref(new Patient());
     const today = ref(new Date().toISOString().split("T")[0]);
     const showMouthStructure = ref(false);
-    const uploadedImage = ref<File | null>(null);
+    const uploadedImage = ref<string | null>(null);
     const showAlert = ref(false);
     const guideImages = [img1, img2, img3, img4, img5, img6, img7, img8];
     const selectedGuideImage = ref<string | null>(null);
-    const theme = useTheme();
 
-    // 현재 테마 이름
-    const themeName = computed(() => theme.global.name.value);
+    //테마 변경
+    const theme = useTheme();
+    const currentTheme = ref(theme.global.name.value);
 
     // 다크모드 여부 확인
-    const isDarkTheme = computed(() => themeName.value === "dark");
+    // 반응형 데이터로 다크모드 여부 계산
+    const isDarkMode = computed(() => currentTheme.value === "dark");
 
-    // 테마 전환
-    const toggleTheme = () => {
-      theme.global.name.value = isDarkTheme.value ? "light" : "dark";
-    };
+    function toggleTheme() {
+      currentTheme.value = isDarkMode.value ? "light" : "dark";
+      theme.global.name.value = currentTheme.value;
+    }
 
     // 그림판 기능
     const detectionCanvas = ref<HTMLCanvasElement | null>(null);
@@ -585,9 +585,9 @@ export default {
       selectedGuideImage,
 
       // 테마변경
-      themeName,
-      isDarkTheme,
+      isDarkMode,
       toggleTheme,
+      currentTheme,
 
       // 그림판 기능
       detectionCanvas,
@@ -604,13 +604,13 @@ export default {
   padding: 4px 8px;
   font-size: 10px;
   margin-left: 150px;
-  border: solid 1px #0cddcb;
+  border: solid 1px rgb(var(--v-theme-borderColor));
 }
 
 .save-btn {
   font-size: 10px;
   padding: 4px 8px;
-  border: solid 1px #0cddcb;
+  border: solid 1px rgb(var(--v-theme-borderColor));
 }
 
 .cancel-btn {
@@ -634,7 +634,7 @@ export default {
   width: 100%;
   height: 500px;
   display: flex;
-  border: 1px solid #0cddcb;
+  border: 1px solid rgb(var(--v-theme-borderColor));
   border-radius: 5px;
   justify-content: center;
   align-items: center;
@@ -651,7 +651,7 @@ export default {
 .jig-slot {
   height: 13rem;
   width: 100%;
-  border: 1px solid #0cddcb;
+  border: 1px solid rgb(var(--v-theme-borderColor));
   border-radius: 5px;
 }
 
@@ -682,7 +682,7 @@ export default {
   justify-content: center;
   align-items: center;
   border-radius: 5px;
-  border: solid 1px #0cddcb;
+  border: solid 1px rgb(var(--v-theme-borderColor));
   width: 100%;
   height: 16rem;
 }
@@ -690,7 +690,7 @@ export default {
 .marker-section {
   display: flex;
   border-radius: 5px;
-  border: solid 1px #0cddcb;
+  border: solid 1px rgb(var(--v-theme-borderColor));
   width: 100%;
   height: 16rem;
 }
@@ -706,12 +706,12 @@ export default {
   width: 100%;
   display: flex;
   border-radius: 5px;
-  border: solid 1px #0cddcb;
+  border: solid 1px rgb(var(--v-theme-borderColor));
 }
 
 .panoramic-container {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: 1fr, 1fr;
   width: 100%;
   height: 100%;
   gap: 8px;
@@ -721,7 +721,7 @@ export default {
   width: 100%;
   height: 100%;
   border-radius: 5px;
-  border: solid 1px #0cddcb;
+  border: solid 1px rgb(var(--v-theme-borderColor));
 }
 
 canvas {

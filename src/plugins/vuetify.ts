@@ -13,19 +13,16 @@ export default createVuetify({
       light: {
         dark: false,
         colors: {
-          primary: "#6200ee",
-          secondary: "#03dac6",
-          background: "#DDDDDD",
-          surface: "#f5f5f5",
+          borderColor: "#6200ee",
+          background: "dddddd",
+          button: "6200ee",
         },
       },
       dark: {
         dark: true,
         colors: {
-          primary: "#bb86fc",
-          secondary: "#03dac6",
-          background: "#121212",
-          surface: "#1e1e1e",
+          borderColor: "#03dac6",
+          button: "03dac6",
         },
       },
     },
