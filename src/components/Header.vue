@@ -223,7 +223,7 @@
                         :key="tabValue"
                         :value="tabValue"
                       >
-                        <v-container fluid>
+                        <v-container>
                           <v-row>
                             <v-col
                               cols="6"
@@ -536,7 +536,7 @@ export default {
 
     // tabs 기능
 
-    // file 변환 기능
+    //file을 url로 변환하여 화면에 로드함
     function convertFileToUrl(file: File) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -611,6 +611,11 @@ export default {
       newPatient.value = patient;
       selectedGuideImage.value = patient.selectedGuide;
       selectedFileName.value = patient.selectedFileName;
+      uploadedCtImage.value = patient.uploadedCtImage;
+
+      if (uploadedCtImage.value) {
+        convertFileToUrl(uploadedCtImage.value);
+      }
       patientList.value.splice(index, 1);
       activeStep.value++;
     }
