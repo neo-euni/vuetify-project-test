@@ -38,24 +38,22 @@
               >
             </v-card-title>
 
-            <v-card-text>
-              <v-list>
-                <v-list-item
-                  v-for="(patient, index) in patientList"
-                  :key="index"
-                  link
-                  @click="loadPatientCase(patient, index)"
-                >
-                  <v-list-item-content>
-                    <v-list-item-title>{{ patient.name }}</v-list-item-title>
-                    <v-list-item-subtitle
-                      >ID: {{ patient.id }}, Gender: {{ patient.gender }}, DOB:
-                      {{ patient.dob }}</v-list-item-subtitle
-                    >
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
-            </v-card-text>
+            <v-list>
+              <v-list-item
+                v-for="(patient, index) in patientList"
+                :key="index"
+                link
+                @click="loadPatientCase(patient, index)"
+              >
+                <v-list-item-content>
+                  <v-list-item-title>{{ patient.name }}</v-list-item-title>
+                  <v-list-item-subtitle
+                    >ID: {{ patient.id }}, Gender: {{ patient.gender }}, DOB:
+                    {{ patient.dob }}</v-list-item-subtitle
+                  >
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
           </v-card>
         </template>
 
@@ -118,31 +116,33 @@
                         >
                       </div>
                     </v-form>
-
-                    <!-- 알림 메시지 -->
-                    <v-alert v-if="showAlert" type="error" dense>
-                      환자 필수 요소를 입력해주세요.
-                    </v-alert>
                   </v-card-text>
+
+                  <!-- 알림 메시지 -->
+                  <v-alert v-if="showAlert" type="error" dense>
+                    환자 필수 요소를 입력해주세요.
+                  </v-alert>
 
                   <!-- 구강 이미지 케이스 세팅 -->
                   <v-card-title>Case Setting</v-card-title>
-                  <v-row justify="center">
-                    <v-col cols="11" md="11" lg="11">
-                      <v-img
-                        v-if="showMouthStructure"
-                        src="@/assets/mouth-structure.png"
-                        alt="Mouth Structure"
-                        max-width="100%"
-                        height="30rem"
-                        contain
-                        style="
-                          border: solid 1px rgb(var(--v-theme-borderColor));
-                          border-radius: 5px;
-                        "
-                      ></v-img>
-                    </v-col>
-                  </v-row>
+                  <v-card-text>
+                    <v-row justify="center">
+                      <v-col cols="11" md="11" lg="11">
+                        <v-img
+                          v-if="showMouthStructure"
+                          src="@/assets/mouth-structure.png"
+                          alt="Mouth Structure"
+                          max-width="100%"
+                          height="30rem"
+                          contain
+                          style="
+                            border: solid 1px rgb(var(--v-theme-borderColor));
+                            border-radius: 5px;
+                          "
+                        ></v-img>
+                      </v-col>
+                    </v-row>
+                  </v-card-text>
                 </v-card>
               </v-col>
               <!-- import data영역 -->
@@ -152,18 +152,17 @@
                   <v-card-text>
                     <v-file-input
                       v-model="selectedFileName"
-                      @change="handleFileChangeAndLoad"
+                      @change="updateCtImage"
                       label="Upload 3D Model (.obj)"
                       density="compact"
                       prepend-icon="mdi-file-upload"
                       outlined
-                      dense
                       class="fixed-width-file-input"
                     ></v-file-input>
                     <div class="model-view-section">
                       <v-img
-                        v-if="uploadedImage"
-                        :src="uploadedImage"
+                        v-if="uploadedCtImage"
+                        :src="uploadedCtImage"
                         alt="Uploaded Image"
                         max-width="100%"
                         contain
@@ -195,15 +194,6 @@
                         <v-card-title>Marker</v-card-title>
                         <v-card-text>
                           <div class="marker-section">
-                            <!-- png file input -->
-                            <!-- <canvas
-                              width="100%"
-                              height="100%"
-                              @mousedown="beginDrawing"
-                              @mousemove="keepDrawing"
-                              @mouseup="stopDrawing"
-                              ref="canvas"
-                            ></canvas> -->
                             <img
                               src="@/assets/dot.png"
                               alt="dot"
@@ -228,13 +218,13 @@
                       <v-tab :value="2">Bite Jig</v-tab>
                     </v-tabs>
 
-                    <v-window v-model="activeTab">
-                      <v-window-item
+                    <v-tabs-window v-model="activeTab">
+                      <v-tabs-window-item
                         v-for="tabValue in [1, 2]"
                         :key="tabValue"
                         :value="tabValue"
                       >
-                        <v-card-text>
+                        <v-container fluid>
                           <v-row>
                             <v-col
                               cols="6"
@@ -244,31 +234,17 @@
                             >
                               <v-card outlined class="jig-slot">
                                 <v-card-text class="centered-image-container">
-                                  <v-btn
-                                    icon
-                                    @click="
-                                      tabValue === 1
-                                        ? onGuideImageClick(n)
-                                        : onJigImageClick(n)
-                                    "
-                                    class="guide-image-btn"
-                                  >
+                                  <v-btn icon class="guide-image-btn">
                                     <v-img
-                                      v-if="
-                                        tabValue === 1
-                                          ? guideImages?.[n - 1]
-                                          : jigImages?.[n - 1]
-                                      "
-                                      :src="
-                                        tabValue === 1
-                                          ? guideImages[n - 1]
-                                          : jigImages[n - 1]
-                                      "
-                                      :alt="
-                                        tabValue === 1
-                                          ? 'guideImages'
-                                          : 'jigImages'
-                                      "
+                                      v-if="tabValue === 1"
+                                      :src="`/assets/guide${n}.png`"
+                                      alt="Guide Image"
+                                      class="guide-image"
+                                    ></v-img>
+                                    <v-img
+                                      v-if="tabValue === 2"
+                                      :src="`/assets/jig${n}.png`"
+                                      alt="Jig Image"
                                       class="guide-image"
                                     ></v-img>
                                   </v-btn>
@@ -276,9 +252,9 @@
                               </v-card>
                             </v-col>
                           </v-row>
-                        </v-card-text>
-                      </v-window-item>
-                    </v-window>
+                        </v-container>
+                      </v-tabs-window-item>
+                    </v-tabs-window>
                   </v-card>
                   <!-- guide select 영역 -->
                   <!-- <v-card-text>
@@ -386,14 +362,14 @@
 import { ref, nextTick, watch, computed } from "vue";
 import { useTheme } from "vuetify";
 // 이미지 리스트 리소스 미리 로드
-import img1 from "@/assets/1-preview.png";
-import img2 from "@/assets/2-preview.png";
-import img3 from "@/assets/3-preview.png";
-import img4 from "@/assets/4-preview.png";
-import img5 from "@/assets/5-preview.png";
-import img6 from "@/assets/6-preview.png";
-import img7 from "@/assets/7-preview.png";
-import img8 from "@/assets/8-preview.png";
+// import img1 from "@/assets/1-preview.png";
+// import img2 from "@/assets/2-preview.png";
+// import img3 from "@/assets/3-preview.png";
+// import img4 from "@/assets/4-preview.png";
+// import img5 from "@/assets/5-preview.png";
+// import img6 from "@/assets/6-preview.png";
+// import img7 from "@/assets/7-preview.png";
+// import img8 from "@/assets/8-preview.png";
 
 class Patient {
   name: string;
@@ -401,8 +377,9 @@ class Patient {
   gender: string;
   dob: string;
   memo: string;
-  importData: File | null;
-  selectedGuide: string;
+  uploadedCtImage: File | null;
+  selectedFileName: string | null;
+  selectedGuide: string | null;
 
   constructor(
     name = "",
@@ -410,15 +387,17 @@ class Patient {
     gender = "",
     dob = "",
     memo = "",
-    importData: File | null = null,
-    selectedGuide: string = ""
+    uploadedCtImage: File | null = null,
+    selectedFileName: string | null = null,
+    selectedGuide: string | null = null
   ) {
     this.name = name;
     this.id = id;
     this.gender = gender;
     this.dob = dob;
     this.memo = memo;
-    this.importData = importData;
+    this.uploadedCtImage = uploadedCtImage;
+    this.selectedFileName = selectedFileName;
     this.selectedGuide = selectedGuide;
   }
 
@@ -428,8 +407,9 @@ class Patient {
     this.gender = "";
     this.dob = "";
     this.memo = "";
-    this.importData = null;
-    this.selectedGuide = "";
+    this.uploadedCtImage = null;
+    this.selectedFileName = null;
+    this.selectedGuide = null;
   }
 }
 
@@ -441,9 +421,10 @@ export default {
     const newPatient = ref(new Patient());
     const today = ref(new Date().toISOString().split("T")[0]);
     const showMouthStructure = ref(false);
-    const uploadedImage = ref<string | null>(null);
+    const uploadedCtImage = ref<File | null>(null);
     const showAlert = ref(false);
-    const guideImages = [img1, img2, img3, img4, img5, img6, img7, img8];
+    // const guideImages = [img1, img2, img3, img4, img5, img6, img7, img8];
+    // const jigImages = [jig1, jig2, jig3, jig4];
     const selectedGuideImage = ref<string | null>(null);
     const selectedFileName = ref<string | null>(null);
     const selctedGuideAndJigCase: number = 1;
@@ -528,18 +509,18 @@ export default {
     }
 
     function beginDrawing(e: MouseEvent) {
-      const pos = getMousePosition(e);
-      x.value = pos.x;
-      y.value = pos.y;
+      const position = getMousePosition(e);
+      x.value = position.x;
+      y.value = position.y;
       isDrawing.value = true;
     }
 
     function keepDrawing(e: MouseEvent) {
       if (isDrawing.value) {
-        const pos = getMousePosition(e);
-        drawLine(x.value, y.value, pos.x, pos.y);
-        x.value = pos.x;
-        y.value = pos.y;
+        const position = getMousePosition(e);
+        drawLine(x.value, y.value, position.x, position.y);
+        x.value = position.x;
+        y.value = position.y;
       }
     }
 
@@ -560,17 +541,18 @@ export default {
     function convertFileToUrl(file: File) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        uploadedImage.value = e.target?.result as string;
+        selectedFileName.value = e.target?.result as string;
       };
       reader.readAsDataURL(file);
     }
 
-    function handleFileChangeAndLoad(event: Event) {
+    function updateCtImage(event: Event) {
       const input = event.target as HTMLInputElement;
       const file = input.files ? input.files[0] : null;
 
       if (file) {
-        uploadedImage.value = file;
+        uploadedCtImage.value = file;
+        selectedFileName.value = file.name;
         convertFileToUrl(file);
       }
     }
@@ -582,7 +564,7 @@ export default {
 
     function cancelNewPatient() {
       newPatient.value.reset();
-      uploadedImage.value = null;
+      uploadedCtImage.value = null;
       selectedFileName.value = null;
     }
 
@@ -594,7 +576,8 @@ export default {
           patient.gender,
           patient.dob,
           patient.memo,
-          patient.importData,
+          patient.uploadedCtImage,
+          patient.selectedFileName,
           patient.selectedGuide
         )
       );
@@ -613,7 +596,7 @@ export default {
 
     function saveNewPatient() {
       if (isPatientInfoValid(newPatient.value)) {
-        newPatient.value.importData = uploadedImage.value;
+        newPatient.value.uploadedCtImage = uploadedCtImage.value;
         newPatient.value.selectedGuide = selectedGuideImage.value || "";
 
         addNewPatient(newPatient.value);
@@ -626,16 +609,20 @@ export default {
 
     function loadPatientCase(patient: Patient, index: number) {
       newPatient.value = patient;
-      uploadedImage.value = patient.importData;
       selectedGuideImage.value = patient.selectedGuide;
+      selectedFileName.value = patient.selectedFileName;
       patientList.value.splice(index, 1);
       activeStep.value++;
     }
 
-    function onGuideImageClick(slotNumber: number) {
-      // console.log(`Slot ${slotNumber} clicked`);
-      selectedGuideImage.value = guideImages[slotNumber - 1];
-    }
+    // function onGuideImageClick(slotNumber: number) {
+    //   // console.log(`Slot ${slotNumber} clicked`);
+    //   selectedGuideImage.value = guideImages[slotNumber - 1];
+    // }
+
+    // function onJigImageClick(slotNumber: number) {
+    //   selectedJigImage.value = jigImages[slotNumber-1];
+    // }
 
     // 그림판 기능
 
@@ -649,12 +636,18 @@ export default {
       today,
       showMouthStructure,
       loadPatientCase,
-      uploadedImage,
-      handleFileChangeAndLoad,
+      uploadedCtImage,
+      updateCtImage,
       showAlert,
-      onGuideImageClick,
-      guideImages,
+
+      // 지그 선택 기능
+      // onGuideImageClick,
+      // onJigImageClick,
+      // guideImages,
+      // jigImages,
+      activeTab,
       selectedGuideImage,
+      // selectedJigImage,
       selectedFileName,
 
       // 테마변경
@@ -667,7 +660,6 @@ export default {
       beginDrawing,
       keepDrawing,
       stopDrawing,
-      activeTab,
     };
   },
 };

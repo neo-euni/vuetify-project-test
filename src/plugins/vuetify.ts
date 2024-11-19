@@ -16,7 +16,7 @@ export default createVuetify({
           borderColor: "#1064A4",
           background: "#DFD5C0",
           button: "#A0E0CC",
-          cancelButton: "#EAE5FF",
+          cancelButton: "#FF968F",
         },
       },
       dark: {
