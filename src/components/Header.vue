@@ -151,18 +151,17 @@
                   <v-card-title>Import Data</v-card-title>
                   <v-card-text>
                     <v-file-input
-                      v-model="selectedFileName"
+                      v-model="uploadedCtImage"
                       @change="updateCtImage"
                       label="Upload 3D Model (.obj)"
-                      density="compact"
                       prepend-icon="mdi-file-upload"
                       outlined
                       class="fixed-width-file-input"
                     ></v-file-input>
                     <div class="model-view-section">
                       <v-img
-                        v-if="uploadedCtImage"
-                        :src="uploadedCtImage"
+                        v-if="selectedFileName"
+                        :src="selectedFileName"
                         alt="Uploaded Image"
                         max-width="100%"
                         contain
@@ -378,7 +377,7 @@ class Patient {
   dob: string;
   memo: string;
   uploadedCtImage: File | null;
-  selectedFileName: string | null;
+  selectedFileName: string;
   selectedGuide: string | null;
 
   constructor(
@@ -388,7 +387,7 @@ class Patient {
     dob = "",
     memo = "",
     uploadedCtImage: File | null = null,
-    selectedFileName: string | null = null,
+    selectedFileName = "",
     selectedGuide: string | null = null
   ) {
     this.name = name;
@@ -408,8 +407,8 @@ class Patient {
     this.dob = "";
     this.memo = "";
     this.uploadedCtImage = null;
-    this.selectedFileName = null;
     this.selectedGuide = null;
+    this.selectedFileName = "";
   }
 }
 
@@ -426,7 +425,7 @@ export default {
     // const guideImages = [img1, img2, img3, img4, img5, img6, img7, img8];
     // const jigImages = [jig1, jig2, jig3, jig4];
     const selectedGuideImage = ref<string | null>(null);
-    const selectedFileName = ref<string | null>(null);
+    const selectedFileName = ref<string>("");
     const selctedGuideAndJigCase: number = 1;
     const activeTab = ref(selctedGuideAndJigCase);
 
@@ -565,7 +564,8 @@ export default {
     function cancelNewPatient() {
       newPatient.value.reset();
       uploadedCtImage.value = null;
-      selectedFileName.value = null;
+      selectedFileName.value = "";
+      selectedGuideImage.value = null;
     }
 
     function addNewPatient(patient: Patient) {
@@ -623,8 +623,6 @@ export default {
     // function onJigImageClick(slotNumber: number) {
     //   selectedJigImage.value = jigImages[slotNumber-1];
     // }
-
-    // 그림판 기능
 
     return {
       activeStep,
