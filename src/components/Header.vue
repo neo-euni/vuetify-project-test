@@ -176,9 +176,9 @@
                         <v-card-text>
                           <div class="bite-jig-view-img-section">
                             <v-img
-                              v-if="selectedGuideImage"
-                              :src="selectedGuideImage"
-                              alt="Selected Guide Image"
+                              v-if="selectedImage"
+                              :src="selectedImage"
+                              alt="Selected Image"
                               width="90%"
                               height="90%"
                               max-width="100%"
@@ -233,16 +233,20 @@
                             >
                               <v-card outlined class="jig-slot">
                                 <v-card-text class="centered-image-container">
-                                  <v-btn icon class="guide-image-btn">
+                                  <v-btn
+                                    icon
+                                    @click="onGuideImageClick(n)"
+                                    class="guide-image-btn"
+                                  >
                                     <v-img
                                       v-if="tabValue === 1"
-                                      :src="`/assets/guide${n}.png`"
+                                      :src="guideImages[n - 1]"
                                       alt="Guide Image"
                                       class="guide-image"
                                     ></v-img>
                                     <v-img
-                                      v-if="tabValue === 2"
-                                      :src="`/assets/jig${n}.png`"
+                                      v-if="tabValue === 2 && n <= 4"
+                                      :src="jigImages[n - 1]"
                                       alt="Jig Image"
                                       class="guide-image"
                                     ></v-img>
@@ -255,29 +259,7 @@
                       </v-tabs-window-item>
                     </v-tabs-window>
                   </v-card>
-                  <!-- guide select 영역 -->
-                  <!-- <v-card-text>
-                    <v-row>
-                      <v-col cols="6" v-for="n in 8" :key="n" class="grid-item">
-                        <v-card outlined class="jig-slot">
-                          <v-card-text class="centered-image-container">
-                            <v-btn
-                              icon
-                              @click="onGuideImageClick(n)"
-                              class="guide-image-btn"
-                            >
-                              <v-img
-                                v-if="guideImages && guideImages[n - 1]"
-                                :src="guideImages[n - 1]"
-                                alt="guideImages"
-                                class="guide-image"
-                              ></v-img>
-                            </v-btn>
-                          </v-card-text>
-                        </v-card>
-                      </v-col>
-                    </v-row>
-                  </v-card-text> -->
+                 
                 </v-card>
               </v-col>
             </v-row>
@@ -358,17 +340,9 @@
 </template>
 
 <script lang="ts">
-import { ref, nextTick, watch, computed } from "vue";
+import { ref, onMounted, nextTick, watch, computed } from "vue";
 import { useTheme } from "vuetify";
-// 이미지 리스트 리소스 미리 로드
-// import img1 from "@/assets/1-preview.png";
-// import img2 from "@/assets/2-preview.png";
-// import img3 from "@/assets/3-preview.png";
-// import img4 from "@/assets/4-preview.png";
-// import img5 from "@/assets/5-preview.png";
-// import img6 from "@/assets/6-preview.png";
-// import img7 from "@/assets/7-preview.png";
-// import img8 from "@/assets/8-preview.png";
+
 
 class Patient {
   name: string;
@@ -378,7 +352,7 @@ class Patient {
   memo: string;
   uploadedCtImage: File | null;
   selectedFileName: string;
-  selectedGuide: string | null;
+  selectedImage: string | null;
 
   constructor(
     name = "",
@@ -388,7 +362,7 @@ class Patient {
     memo = "",
     uploadedCtImage: File | null = null,
     selectedFileName = "",
-    selectedGuide: string | null = null
+    selectedImage: string | null = null
   ) {
     this.name = name;
     this.id = id;
@@ -397,7 +371,7 @@ class Patient {
     this.memo = memo;
     this.uploadedCtImage = uploadedCtImage;
     this.selectedFileName = selectedFileName;
-    this.selectedGuide = selectedGuide;
+    this.selectedImage = selectedImage;
   }
 
   reset() {
@@ -407,7 +381,7 @@ class Patient {
     this.dob = "";
     this.memo = "";
     this.uploadedCtImage = null;
-    this.selectedGuide = null;
+    this.selectedImage = null;
     this.selectedFileName = "";
   }
 }
@@ -422,12 +396,12 @@ export default {
     const showMouthStructure = ref(false);
     const uploadedCtImage = ref<File | null>(null);
     const showAlert = ref(false);
-    // const guideImages = [img1, img2, img3, img4, img5, img6, img7, img8];
-    // const jigImages = [jig1, jig2, jig3, jig4];
-    const selectedGuideImage = ref<string | null>(null);
+    const guideImages = ref<string[]>([]);
+    const jigImages = ref<string[]>([]);
+    const selectedImage = ref<string | null>(null);
     const selectedFileName = ref<string>("");
-    const selctedGuideAndJigCase: number = 1;
-    const activeTab = ref(selctedGuideAndJigCase);
+    const selectedGuideAndJigCase: number = 1;
+    const activeTab = ref(selectedGuideAndJigCase);
 
     //테마 변경
     const theme = useTheme();
@@ -534,7 +508,6 @@ export default {
       }
     });
 
-    // tabs 기능
 
     //file을 url로 변환하여 화면에 로드함
     function convertFileToUrl(file: File) {
@@ -565,10 +538,10 @@ export default {
       newPatient.value.reset();
       uploadedCtImage.value = null;
       selectedFileName.value = "";
-      selectedGuideImage.value = null;
+      selectedImage.value = null;
     }
 
-    function addNewPatient(patient: Patient) {
+    function insertNewPatient(patient: Patient) {
       patientList.value.unshift(
         new Patient(
           patient.name,
@@ -578,7 +551,7 @@ export default {
           patient.memo,
           patient.uploadedCtImage,
           patient.selectedFileName,
-          patient.selectedGuide
+          patient.selectedImage
         )
       );
     }
@@ -597,9 +570,9 @@ export default {
     function saveNewPatient() {
       if (isPatientInfoValid(newPatient.value)) {
         newPatient.value.uploadedCtImage = uploadedCtImage.value;
-        newPatient.value.selectedGuide = selectedGuideImage.value || "";
+        newPatient.value.selectedImage = selectedImage.value || "";
 
-        addNewPatient(newPatient.value);
+        insertNewPatient(newPatient.value);
         showMouthStructure.value = true;
         activeStep.value = STEP;
       } else {
@@ -609,7 +582,7 @@ export default {
 
     function loadPatientCase(patient: Patient, index: number) {
       newPatient.value = patient;
-      selectedGuideImage.value = patient.selectedGuide;
+      selectedImage.value = patient.selectedImage;
       selectedFileName.value = patient.selectedFileName;
       uploadedCtImage.value = patient.uploadedCtImage;
 
@@ -620,14 +593,34 @@ export default {
       activeStep.value++;
     }
 
-    // function onGuideImageClick(slotNumber: number) {
-    //   // console.log(`Slot ${slotNumber} clicked`);
-    //   selectedGuideImage.value = guideImages[slotNumber - 1];
-    // }
+    function onGuideImageClick(slotNumber: number) {
+      console.log(`Slot ${slotNumber} clicked`);
+      if (activeTab.value === 1) {
+        selectedImage.value = guideImages.value[slotNumber - 1];
+      } else if (activeTab.value === 2 && slotNumber <= 4) {
+        selectedImage.value = jigImages.value[slotNumber - 1];
+      }
+    }
 
-    // function onJigImageClick(slotNumber: number) {
-    //   selectedJigImage.value = jigImages[slotNumber-1];
-    // }
+    onMounted(() => {
+      // guideImages 초기화
+      for (let i = 1; i <= 8; i++) {
+        import(`@/assets/guide${i}.png`).then((module) => {
+          guideImages.value.push(module.default);
+        });
+      }
+
+      // jigImages 초기화
+      for (let i = 1; i <= 4; i++) {
+        import(`@/assets/jig${i}.png`).then((module) => {
+          jigImages.value.push(module.default);
+        });
+      }
+    });
+
+    function onJigImageClick(slotNumber: number) {
+      selectedImage.value = jigImages.value[slotNumber - 1];
+    }
 
     return {
       activeStep,
@@ -644,13 +637,12 @@ export default {
       showAlert,
 
       // 지그 선택 기능
-      // onGuideImageClick,
-      // onJigImageClick,
-      // guideImages,
-      // jigImages,
+      onGuideImageClick,
+      onJigImageClick,
+      guideImages,
+      jigImages,
       activeTab,
-      selectedGuideImage,
-      // selectedJigImage,
+      selectedImage,
       selectedFileName,
 
       // 테마변경
