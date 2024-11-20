@@ -42,6 +42,22 @@ export default createVuetify({
           cancelButton: "#FF0D0A",
         },
       },
+      bluePastel: {
+        dark: false,
+        colors: {
+          background: "#C3D2E5",
+          borderColor: "#3E4755",
+          cancelButton: "#FE5201",
+        },
+      },
+      pinkPastel: {
+        dark: false,
+        colors: {
+          background: "#FFE5E8",
+          borderColor: "#FF6577",
+          cancelButton: "#6200EE",
+        },
+      },
     },
   },
 });

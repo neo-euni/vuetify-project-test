@@ -3,7 +3,7 @@
     <v-container>
       <v-speed-dial
         :open-on-hover="false"
-        location="bottom center"
+        location="right center"
         transition="slide-y-reverse-transition"
       >
         <template v-slot:activator="{ props: activatorProps }">
@@ -463,6 +463,18 @@ export default {
         icon: "mdi-star",
         borderColor: "rgb(var(--v-theme-borderColor))",
       },
+      {
+        name: "bluePastel",
+        color: "#FFFFFF",
+        icon: "mdi-eyedropper",
+        borderColor: "rgb(var(--v-theme-borderColor))",
+      },
+      {
+        name: "pinkPastel",
+        color: "#FFFFFF",
+        icon: "mdi-pencil",
+        borderColor: "rgb(var(--v-theme-borderColor))",
+      },
     ]);
     function changeTheme(themeName: string) {
       currentTheme.value = themeName;
@@ -707,8 +719,6 @@ export default {
       selectedFileName,
 
       // 테마변경
-      // isDarkMode,
-      // toggleTheme,
       currentTheme,
       themeList,
       changeTheme,
