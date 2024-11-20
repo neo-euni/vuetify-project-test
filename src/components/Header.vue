@@ -1,7 +1,38 @@
 <template>
   <v-app>
     <v-container>
-      <v-btn
+      <v-speed-dial
+        :open-on-hover="false"
+        location="bottom center"
+        transition="slide-y-reverse-transition"
+      >
+        <template v-slot:activator="{ props: activatorProps }">
+          <v-btn
+            v-bind="activatorProps"
+            icon
+            :color="currentBorderColor"
+            size="large"
+          >
+            <v-icon color="#ffffff">mdi-theme-light-dark</v-icon>
+          </v-btn>
+        </template>
+
+        <!-- 버튼을 여기에 추가 -->
+        <v-btn
+          v-for="(theme, index) in themeList"
+          :key="index"
+          fab
+          icon
+          :color="theme.color"
+          @click="changeTheme(theme.name)"
+        >
+          <v-icon :color="theme.borderColor">{{ theme.icon }}</v-icon>
+        </v-btn>
+      </v-speed-dial>
+
+      <!-- 테마변경 -->
+
+      <!-- <v-btn
         @click="toggleTheme"
         class="theme-toggle-btn"
         :color="isDarkMode ? 'button' : 'button'"
@@ -12,8 +43,9 @@
         <v-icon>{{
           isDarkMode ? "mdi-weather-sunny" : "mdi-weather-night"
         }}</v-icon>
-      </v-btn>
+      </v-btn> -->
 
+      <!-- stepper 시작  -->
       <v-stepper
         v-model="activeStep"
         alt-labels
@@ -259,7 +291,6 @@
                       </v-tabs-window-item>
                     </v-tabs-window>
                   </v-card>
-                 
                 </v-card>
               </v-col>
             </v-row>
@@ -340,9 +371,8 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted, nextTick, watch, computed } from "vue";
+import { ref, onMounted, nextTick, watch } from "vue";
 import { useTheme } from "vuetify";
-
 
 class Patient {
   name: string;
@@ -406,15 +436,47 @@ export default {
     //테마 변경
     const theme = useTheme();
     const currentTheme = ref(theme.global.name.value);
+    const currentBorderColor = ref("rgb(var(--v-theme-borderColor))");
+
+    const themeList = ref([
+      {
+        name: "light",
+        color: "#FFFFFF",
+        icon: "mdi-white-balance-sunny",
+        borderColor: "rgb(var(--v-theme-borderColor))",
+      },
+      {
+        name: "dark",
+        color: "#FFFFFF",
+        icon: "mdi-weather-night",
+        borderColor: "rgb(var(--v-theme-borderColor))",
+      },
+      {
+        name: "lightSecondary",
+        color: "#FFFFFF",
+        icon: "mdi-star-outline",
+        borderColor: "rgb(var(--v-theme-borderColor))",
+      },
+      {
+        name: "darkSecondary",
+        color: "#FFFFFF",
+        icon: "mdi-star",
+        borderColor: "rgb(var(--v-theme-borderColor))",
+      },
+    ]);
+    function changeTheme(themeName: string) {
+      currentTheme.value = themeName;
+      theme.global.name.value = currentTheme.value;
+    }
 
     // 다크모드 여부 확인
     // 반응형 데이터로 다크모드 여부 계산
-    const isDarkMode = computed(() => currentTheme.value === "dark");
+    // const isDarkMode = computed(() => currentTheme.value === "dark");
 
-    function toggleTheme() {
-      currentTheme.value = isDarkMode.value ? "light" : "dark";
-      theme.global.name.value = currentTheme.value;
-    }
+    // function toggleTheme() {
+    //   currentTheme.value = isDarkMode.value ? "light" : "dark";
+    //   theme.global.name.value = currentTheme.value;
+    // }
 
     // 그림판 기능
     const detectionCanvas = ref<HTMLCanvasElement | null>(null);
@@ -462,7 +524,7 @@ export default {
     function drawLine(x1: number, y1: number, x2: number, y2: number) {
       if (detectionCtx.value) {
         detectionCtx.value.beginPath();
-        detectionCtx.value.strokeStyle = "#0CDDCB";
+        detectionCtx.value.strokeStyle = "#8419EE";
         detectionCtx.value.lineWidth = 5;
         detectionCtx.value.moveTo(x1, y1);
         detectionCtx.value.lineTo(x2, y2);
@@ -507,7 +569,6 @@ export default {
         initializeCanvas();
       }
     });
-
 
     //file을 url로 변환하여 화면에 로드함
     function convertFileToUrl(file: File) {
@@ -646,9 +707,12 @@ export default {
       selectedFileName,
 
       // 테마변경
-      isDarkMode,
-      toggleTheme,
+      // isDarkMode,
+      // toggleTheme,
       currentTheme,
+      themeList,
+      changeTheme,
+      currentBorderColor,
 
       // 그림판 기능
       detectionCanvas,
@@ -791,21 +855,5 @@ canvas {
   background-size: cover; /* 배경 이미지가 요소의 크기에 맞게 조정되도록 설정 */
   background-repeat: no-repeat; /* 배경 이미지 반복 없음 */
   width: 100%;
-}
-
-.theme-toggle-btn {
-  position: fixed;
-  top: 20px;
-  right: 50px;
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-weight: bold;
-  font-size: 10px;
-  transition: all 0.3s ease-in-out;
-}
-
-.theme-toggle-btn:hover {
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-  transform: translateY(-3px);
 }
 </style>
