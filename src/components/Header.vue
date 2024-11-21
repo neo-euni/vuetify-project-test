@@ -17,7 +17,7 @@
           </v-btn>
         </template>
 
-        <!-- 버튼을 여기에 추가 -->
+        <!-- 테마 변경 -->
         <v-btn
           v-for="(theme, index) in themeList"
           :key="index"
@@ -29,21 +29,6 @@
           <v-icon :color="theme.borderColor">{{ theme.icon }}</v-icon>
         </v-btn>
       </v-speed-dial>
-
-      <!-- 테마변경 -->
-
-      <!-- <v-btn
-        @click="toggleTheme"
-        class="theme-toggle-btn"
-        :color="isDarkMode ? 'button' : 'button'"
-        elevation="8"
-      >
-        {{ isDarkMode ? "Light Mode" : "Dark Mode" }}
-        &nbsp;
-        <v-icon>{{
-          isDarkMode ? "mdi-weather-sunny" : "mdi-weather-night"
-        }}</v-icon>
-      </v-btn> -->
 
       <!-- stepper 시작  -->
       <v-stepper
@@ -298,7 +283,79 @@
         </template>
 
         <template v-slot:item.3>
-          <v-card title="Simulation" flat>...</v-card>
+          <v-card title="Simulation" flat>
+            <v-card-text>
+              <v-row>
+                <v-col cols="4">
+                  <!-- vuetify에서 제공하는 기본 라디오 버튼 -->
+                  <v-radio-group inline label="vuetify basic Radio group label">
+                    <v-radio label="Radio One" value="one"></v-radio>
+                    <v-radio label="Radio Two" value="two"></v-radio>
+                    <v-radio label="Radio Three" value="three"></v-radio>
+                  </v-radio-group>
+                  <br />
+                  <!-- 커스텀 라디오 버튼, 아이콘으로 변경하기 -->
+                  <v-radio-group
+                    v-model="customRadioValue"
+                    label="Custom Radio Group"
+                    class="custom-radio-group"
+                  >
+                    <v-radio value="one">
+                      <template #label>
+                        <v-icon>mdi-home</v-icon> Radio One
+                      </template>
+                    </v-radio>
+                    <v-radio value="two">
+                      <template #label>
+                        <v-icon>mdi-account</v-icon> Radio Two
+                      </template>
+                    </v-radio>
+                    <v-radio value="three">
+                      <template #label>
+                        <v-icon>mdi-star</v-icon> Radio Three
+                      </template>
+                    </v-radio>
+                  </v-radio-group>
+
+                  <!-- 커스텀 라디오 모양 -->
+                  <v-radio-group
+                    v-model="customRadioValue"
+                    label="Custom Square Radio Buttons"
+                    class="custom-radio-group"
+                  >
+                    <v-radio label="Option 1" value="one"></v-radio>
+                    <v-radio label="Option 2" value="two"></v-radio>
+                    <v-radio label="Option 3" value="three"></v-radio>
+                  </v-radio-group>
+                </v-col>
+                <v-col cols="7"></v-col>
+                <v-col cols="1">
+                  <v-switch
+                    v-model="ctSwitch"
+                    color="borderColor"
+                    label="CT"
+                    value="ct"
+                    hide-details
+                    inset
+                    class="custom-switch"
+                  ></v-switch>
+                  <v-switch
+                    v-model="ctSwitch"
+                    color="borderColor"
+                    label="CT"
+                    value="ct"
+                    hide-details
+                    class="custom-switch"
+                  ></v-switch>
+                  <v-switch
+                    :v-model="ctSwitch"
+                    label="on loading"
+                    loading="warning"
+                  ></v-switch>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
         </template>
         <template v-slot:item.4>
           <v-card title="Detection" flat>
@@ -371,7 +428,7 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted, nextTick, watch } from "vue";
+import { ref, onMounted, nextTick, watch, defineComponent } from "vue";
 import { useTheme } from "vuetify";
 
 class Patient {
@@ -416,7 +473,7 @@ class Patient {
   }
 }
 
-export default {
+export default defineComponent({
   setup() {
     const STEP: number = 1;
     const activeStep = ref(STEP);
@@ -437,7 +494,6 @@ export default {
     const theme = useTheme();
     const currentTheme = ref(theme.global.name.value);
     const currentBorderColor = ref("rgb(var(--v-theme-borderColor))");
-
     const themeList = ref([
       {
         name: "light",
@@ -476,6 +532,13 @@ export default {
         borderColor: "rgb(var(--v-theme-borderColor))",
       },
     ]);
+
+    // 커스텀 테스트 변수 설정
+    const ctSwitch = ref(false);
+    const customRadioValue = ref("one");
+
+    // 밑에부터 건들지말기
+    // 테마 변경 함수
     function changeTheme(themeName: string) {
       currentTheme.value = themeName;
       theme.global.name.value = currentTheme.value;
@@ -729,9 +792,13 @@ export default {
       beginDrawing,
       keepDrawing,
       stopDrawing,
+
+      // 커스텀 테스트 변수 설정
+      ctSwitch,
+      customRadioValue,
     };
   },
-};
+});
 </script>
 
 <style scoped>
@@ -865,5 +932,13 @@ canvas {
   background-size: cover; /* 배경 이미지가 요소의 크기에 맞게 조정되도록 설정 */
   background-repeat: no-repeat; /* 배경 이미지 반복 없음 */
   width: 100%;
+}
+
+.custom-switch .v-input--active .v-input__control {
+  border-color: var(--v-theme-borderColor); /* 활성 상태 */
+}
+
+.custom-radio-group .v-input--is-checked .v-input__slot {
+  border-color: var(--v-theme-borderColor); /* 선택된 라디오 버튼의 슬롯 색상 */
 }
 </style>
