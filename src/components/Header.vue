@@ -142,24 +142,22 @@
 
                   <!-- 구강 이미지 케이스 세팅 -->
                   <v-card-title>Case Setting</v-card-title>
-                  <v-card-text>
-                    <v-row justify="center">
-                      <v-col cols="11" md="11" lg="11">
-                        <v-img
-                          v-if="showMouthStructure"
-                          src="@/assets/mouth-structure.png"
-                          alt="Mouth Structure"
-                          max-width="100%"
-                          height="30rem"
-                          contain
-                          style="
-                            border: solid 1px rgb(var(--v-theme-borderColor));
-                            border-radius: 5px;
-                          "
-                        ></v-img>
-                      </v-col>
-                    </v-row>
-                  </v-card-text>
+                  <v-row justify="center">
+                    <v-col cols="11" md="11" lg="11">
+                      <v-img
+                        v-if="showMouthStructure"
+                        src="@/assets/mouth-structure.png"
+                        alt="Mouth Structure"
+                        max-width="100%"
+                        height="30rem"
+                        contain
+                        style="
+                          border: solid 1px rgb(var(--v-theme-borderColor));
+                          border-radius: 5px;
+                        "
+                      ></v-img>
+                    </v-col>
+                  </v-row>
                 </v-card>
               </v-col>
               <!-- import data영역 -->
@@ -171,8 +169,10 @@
                       v-model="uploadedCtImage"
                       @change="updateCtImage"
                       label="Upload 3D Model (.obj)"
-                      prepend-icon="mdi-file-upload"
+                      prepend-icon=""
+                      prepend-inner-icon="mdi-file-upload"
                       outlined
+                      bg-color="borderColor"
                       class="fixed-width-file-input"
                     ></v-file-input>
                     <div class="model-view-section">
@@ -281,55 +281,33 @@
             </v-row>
           </v-container>
         </template>
-
         <template v-slot:item.3>
           <v-card title="Simulation" flat>
             <v-card-text>
               <v-row>
                 <v-col cols="4">
-                  <!-- vuetify에서 제공하는 기본 라디오 버튼 -->
-                  <v-radio-group inline label="vuetify basic Radio group label">
-                    <v-radio label="Radio One" value="one"></v-radio>
-                    <v-radio label="Radio Two" value="two"></v-radio>
-                    <v-radio label="Radio Three" value="three"></v-radio>
-                  </v-radio-group>
-                  <br />
-                  <!-- 커스텀 라디오 버튼, 아이콘으로 변경하기 -->
-                  <v-radio-group
-                    v-model="customRadioValue"
-                    label="Custom Radio Group"
-                    class="custom-radio-group"
-                  >
-                    <v-radio value="one">
-                      <template #label>
-                        <v-icon>mdi-home</v-icon> Radio One
+                  <!-- 커스텀 라디오 버튼: 버튼 색상 테마색상으로 변경 및 아이콘 집어넣기 / 라벨 색상 테마색상으로 변경 -->
+                  <v-radio-group v-model="selectedRadio" label="Custom Radio">
+                    <v-radio
+                      v-for="(option, index) in options"
+                      :key="index"
+                      :label="option.label"
+                      :value="option.value"
+                      :color="currentBorderColor"
+                    >
+                      <template v-slot:label>
+                        <v-icon>{{ option.icon }}</v-icon
+                        >&nbsp;
+                        <span :style="{ color: currentBorderColor }">{{
+                          option.label
+                        }}</span>
                       </template>
                     </v-radio>
-                    <v-radio value="two">
-                      <template #label>
-                        <v-icon>mdi-account</v-icon> Radio Two
-                      </template>
-                    </v-radio>
-                    <v-radio value="three">
-                      <template #label>
-                        <v-icon>mdi-star</v-icon> Radio Three
-                      </template>
-                    </v-radio>
-                  </v-radio-group>
-
-                  <!-- 커스텀 라디오 모양 -->
-                  <v-radio-group
-                    v-model="customRadioValue"
-                    label="Custom Square Radio Buttons"
-                    class="custom-radio-group"
-                  >
-                    <v-radio label="Option 1" value="one"></v-radio>
-                    <v-radio label="Option 2" value="two"></v-radio>
-                    <v-radio label="Option 3" value="three"></v-radio>
                   </v-radio-group>
                 </v-col>
-                <v-col cols="7"></v-col>
-                <v-col cols="1">
+                <v-col cols="6"></v-col>
+                <v-col cols="2">
+                  <h3>커스텀 토글 버튼</h3>
                   <v-switch
                     v-model="ctSwitch"
                     color="borderColor"
@@ -489,6 +467,12 @@ export default defineComponent({
     const selectedFileName = ref<string>("");
     const selectedGuideAndJigCase: number = 1;
     const activeTab = ref(selectedGuideAndJigCase);
+    // 그림판 기능
+    const detectionCanvas = ref<HTMLCanvasElement | null>(null);
+    const detectionCtx = ref<CanvasRenderingContext2D | null>(null);
+    const x = ref(0);
+    const y = ref(0);
+    const isDrawing = ref(false);
 
     //테마 변경
     const theme = useTheme();
@@ -533,9 +517,14 @@ export default defineComponent({
       },
     ]);
 
-    // 커스텀 테스트 변수 설정
+    // 커스텀 라디오버튼 테스트 변수 설정
     const ctSwitch = ref(false);
-    const customRadioValue = ref("one");
+    const selectedRadio = ref("one");
+    const options = ref([
+      { label: "Option One", value: "one", icon: "mdi-star-outline" },
+      { label: "Option Two", value: "two", icon: "mdi-star" },
+      { label: "Option Three", value: "three", icon: "mdi-star-half" },
+    ]);
 
     // 밑에부터 건들지말기
     // 테마 변경 함수
@@ -544,7 +533,6 @@ export default defineComponent({
       theme.global.name.value = currentTheme.value;
     }
 
-    // 다크모드 여부 확인
     // 반응형 데이터로 다크모드 여부 계산
     // const isDarkMode = computed(() => currentTheme.value === "dark");
 
@@ -552,13 +540,6 @@ export default defineComponent({
     //   currentTheme.value = isDarkMode.value ? "light" : "dark";
     //   theme.global.name.value = currentTheme.value;
     // }
-
-    // 그림판 기능
-    const detectionCanvas = ref<HTMLCanvasElement | null>(null);
-    const detectionCtx = ref<CanvasRenderingContext2D | null>(null);
-    const x = ref(0);
-    const y = ref(0);
-    const isDrawing = ref(false);
 
     function initializeCanvas() {
       if (detectionCanvas.value) {
@@ -710,7 +691,7 @@ export default defineComponent({
 
         insertNewPatient(newPatient.value);
         showMouthStructure.value = true;
-        activeStep.value = STEP;
+        activeStep.value--;
       } else {
         showAlertMessage();
       }
@@ -795,7 +776,8 @@ export default defineComponent({
 
       // 커스텀 테스트 변수 설정
       ctSwitch,
-      customRadioValue,
+      selectedRadio,
+      options,
     };
   },
 });
@@ -932,13 +914,5 @@ canvas {
   background-size: cover; /* 배경 이미지가 요소의 크기에 맞게 조정되도록 설정 */
   background-repeat: no-repeat; /* 배경 이미지 반복 없음 */
   width: 100%;
-}
-
-.custom-switch .v-input--active .v-input__control {
-  border-color: var(--v-theme-borderColor); /* 활성 상태 */
-}
-
-.custom-radio-group .v-input--is-checked .v-input__slot {
-  border-color: var(--v-theme-borderColor); /* 선택된 라디오 버튼의 슬롯 색상 */
 }
 </style>
