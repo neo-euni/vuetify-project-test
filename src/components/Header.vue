@@ -579,17 +579,20 @@ export default defineComponent({
 
     function drawLine(x1: number, y1: number, x2: number, y2: number) {
       if (detectionCtx.value) {
-        detectionCtx.value.beginPath();
-        detectionCtx.value.strokeStyle = "#8419EE";
         detectionCtx.value.lineWidth = 5;
+        detectionCtx.value.strokeStyle = "#6200EE";
+        detectionCtx.value.beginPath();
         detectionCtx.value.moveTo(x1, y1);
         detectionCtx.value.lineTo(x2, y2);
-        detectionCtx.value.stroke();
         detectionCtx.value.closePath();
+        detectionCtx.value.stroke();
       }
     }
 
     function getMousePosition(e: MouseEvent) {
+      if (!detectionCanvas.value) {
+        throw new Error("Canvas is not initialized");
+      }
       const rect = detectionCanvas.value.getBoundingClientRect();
       const scaleX = detectionCanvas.value.width / rect.width;
       const scaleY = detectionCanvas.value.height / rect.height;
