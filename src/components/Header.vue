@@ -67,20 +67,24 @@
               >
             </v-card-title>
 
-            <v-list>
+            <v-list lines="two">
               <v-list-item
                 v-for="(patient, index) in patientList"
                 :key="index"
                 link
                 @click="loadPatientCase(patient, index)"
               >
+                <template v-slot:prepend>
+                  <v-icon :color="currentBorderColor">mdi-account</v-icon>
+                </template>
                 <v-list-item-content>
-                  <v-list-item-title>{{ patient.name }}</v-list-item-title>
+                  <v-list-item-title> {{ patient.name }}</v-list-item-title>
                   <v-list-item-subtitle
                     >ID: {{ patient.id }}, Gender: {{ patient.gender }}, DOB:
                     {{ patient.dob }}</v-list-item-subtitle
                   >
                 </v-list-item-content>
+                <v-divider :thickness="2" color="borderColor"></v-divider>
               </v-list-item>
             </v-list>
           </v-card>
@@ -292,7 +296,7 @@
           <v-card title="Simulation" flat>
             <v-card-text>
               <v-row>
-                <v-col cols="4">
+                <v-col cols="2">
                   <!-- 커스텀 라디오 버튼: 버튼 색상 테마색상으로 변경 및 아이콘 집어넣기 / 라벨 색상 테마색상으로 변경 -->
                   <v-radio-group v-model="selectedRadio" label="Custom Radio">
                     <v-radio
@@ -312,9 +316,10 @@
                     </v-radio>
                   </v-radio-group>
                 </v-col>
-                <v-col cols="6"></v-col>
+                <v-divider class="ms-3" inset vertical></v-divider>
+                <v-col cols="8"> </v-col>
+                <v-divider class="ms-3" inset vertical></v-divider>
                 <v-col cols="2">
-                  <h3>커스텀 토글 버튼</h3>
                   <v-switch
                     v-model="ctSwitch"
                     color="borderColor"
@@ -334,7 +339,7 @@
                   ></v-switch>
                   <v-switch
                     :v-model="ctSwitch"
-                    label="on loading"
+                    label="loading"
                     loading="warning"
                   ></v-switch>
                 </v-col>
@@ -902,7 +907,7 @@ export default defineComponent({
 }
 
 .detection-view {
-  width: 100%;
+  flex: 1;
   display: flex;
   border-radius: 5px;
   border: solid 1px rgb(var(--v-theme-borderColor));
@@ -910,9 +915,10 @@ export default defineComponent({
 
 .panoramic-container {
   display: grid;
-  grid-template-rows: 1fr 1fr;
+  grid-template-rows: repeat(4, 1fr);
   width: 100%;
   height: 100%;
+  flex: 1;
   gap: 10px;
 }
 
