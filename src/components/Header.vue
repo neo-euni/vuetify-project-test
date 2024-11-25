@@ -454,6 +454,7 @@ class Patient {
   uploadedCtImage: File | null;
   selectedFileName: string;
   selectedImage: string | null;
+  showMouthStructure: boolean;
 
   constructor(
     name = "",
@@ -463,7 +464,8 @@ class Patient {
     memo = "",
     uploadedCtImage: File | null = null,
     selectedFileName = "",
-    selectedImage: string | null = null
+    selectedImage: string | null = null,
+    showMouthStructure: boolean = false
   ) {
     this.name = name;
     this.id = id;
@@ -473,6 +475,7 @@ class Patient {
     this.uploadedCtImage = uploadedCtImage;
     this.selectedFileName = selectedFileName;
     this.selectedImage = selectedImage;
+    this.showMouthStructure = showMouthStructure;
   }
 
   reset() {
@@ -484,6 +487,7 @@ class Patient {
     this.uploadedCtImage = null;
     this.selectedImage = null;
     this.selectedFileName = "";
+    this.showMouthStructure = false;
   }
 }
 
@@ -817,9 +821,10 @@ export default defineComponent({
 
     function cancelNewPatient(): void {
       newPatient.value.reset();
-      uploadedCtImage.value = null;
-      selectedFileName.value = "";
       selectedImage.value = null;
+      showMouthStructure.value = false;
+      initializeThreeJS();
+      selectedFileName.value = "";
     }
 
     function insertNewPatient(patient: Patient): void {
