@@ -707,19 +707,58 @@ export default defineComponent({
     }
 
     function saveNewPatient(): void {
-      if (isPatientInfoValid(newPatient.value)) {
-        newPatient.value.uploadedCtImage = uploadedCtImage.value;
-        newPatient.value.selectedImage = selectedImage.value || "";
-        insertNewPatient(newPatient.value);
-        showMouthStructure.value = true;
-        activeStep.value--;
-      } else {
+      if (!isPatientInfoValid(newPatient.value)) {
         showAlertMessage();
+        return;
       }
+
+      const existingPatientIndex = findPatientIndexById(newPatient.value.id);
+
+      if (existingPatientIndex !== -1) {
+        updatePatient(existingPatientIndex, newPatient.value);
+      } else {
+        addNewPatient(newPatient.value);
+      }
+
+      showMouthStructure.value = true;
+      activeStep.value--;
+    }
+
+    function findPatientIndexById(patientId: string): number {
+      return patientList.value.findIndex((p) => p.id === patientId);
+    }
+
+    function updatePatient(index: number, updatedPatient: Patient): void {
+      patientList.value[index] = {
+        ...patientList.value[index], // 기존 환자 정보 유지
+        ...updatedPatient, // 변경된 값으로 업데이트
+        uploadedCtImage: uploadedCtImage.value,
+        selectedImage: selectedImage.value || "",
+      };
+      console.log(`환자 ID ${updatedPatient.id}의 정보가 업데이트되었습니다.`);
+    }
+
+    function addNewPatient(patient: Patient): void {
+      // 환자 리스트에서 동일한 ID를 가진 환자 찾기
+      const existingPatientIndex = findPatientIndexById(patient.id);
+
+      if (existingPatientIndex !== -1) {
+        // 중복된 환자가 있는 경우, 추가하지 않음
+        console.log(
+          `환자 ID ${patient.id}는 이미 존재합니다. 추가하지 않습니다.`
+        );
+        return; // 중복된 환자 ID가 있을 경우 함수 종료
+      }
+
+      // 환자 정보를 리스트에 추가
+      patient.uploadedCtImage = uploadedCtImage.value;
+      patient.selectedImage = selectedImage.value || "";
+      insertNewPatient(patient);
+      console.log(`환자 ID ${patient.id}가 새로 추가되었습니다.`);
     }
 
     function loadPatientCase(patient: Patient, index: number): void {
-      newPatient.value = patient;
+      patientList.value[index] = patient;
       selectedImage.value = patient.selectedImage;
       selectedFileName.value = patient.selectedFileName;
       uploadedCtImage.value = patient.uploadedCtImage;
@@ -727,7 +766,6 @@ export default defineComponent({
       if (uploadedCtImage.value) {
         convertFileToUrl(uploadedCtImage.value);
       }
-      patientList.value.splice(index, 1);
       activeStep.value++;
     }
 
