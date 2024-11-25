@@ -898,7 +898,7 @@ export default defineComponent({
   display: flex;
   align-items: center;
   width: 100%;
-  height: 70vh;
+  height: 100%;
 }
 
 .detection-view {
@@ -910,7 +910,7 @@ export default defineComponent({
 
 .panoramic-container {
   display: grid;
-  grid-template-rows: 1fr, 1fr;
+  grid-template-rows: 1fr 1fr;
   width: 100%;
   height: 100%;
   gap: 10px;
@@ -921,6 +921,7 @@ export default defineComponent({
   height: 100%;
   border-radius: 5px;
   border: solid 1px rgb(var(--v-theme-borderColor));
+  margin-bottom: 10px;
 }
 
 canvas {
