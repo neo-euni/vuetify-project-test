@@ -185,15 +185,21 @@
                       outlined
                       bg-color="borderColor"
                       class="fixed-width-file-input"
+                      accept=".obj,.stl"
                     ></v-file-input>
                     <div class="model-view-section">
-                      <v-img
+                      <div
+                        id="viewer"
+                        ref="viewer"
+                        class="viewer-container"
+                      ></div>
+                      <!-- <v-img
                         v-if="selectedFileName"
                         :src="selectedFileName"
                         alt="Uploaded Image"
                         max-width="100%"
                         contain
-                      />
+                      /> -->
                     </div>
                   </v-card-text>
 
@@ -418,8 +424,19 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted, nextTick, watch, defineComponent } from "vue";
+import {
+  ref,
+  onMounted,
+  nextTick,
+  watch,
+  defineComponent,
+  onBeforeUnmount,
+} from "vue";
 import { useTheme } from "vuetify";
+import * as THREE from "three";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
+import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 interface Theme {
   name: string;
@@ -545,6 +562,13 @@ export default defineComponent({
       { label: "Option Three", value: "three", icon: "mdi-star-half" },
     ]);
 
+    // three.js 관련 변수 설정
+    const viewer = ref<HTMLDivElement | null>(null);
+    let scene: THREE.Scene;
+    let camera: THREE.PerspectiveCamera;
+    let renderer: THREE.WebGLRenderer;
+    let controls: OrbitControls;
+
     // 밑에부터 건들지말기
     // 테마 변경 함수
     function changeTheme(themeName: string): void {
@@ -649,13 +673,13 @@ export default defineComponent({
     });
 
     //file을 url로 변환하여 화면에 로드함
-    function convertFileToUrl(file: File): void {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        selectedFileName.value = e.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
+    // function convertFileToUrl(file: File): void {
+    //   const reader = new FileReader();
+    //   reader.onload = (e) => {
+    //     selectedFileName.value = e.target?.result as string;
+    //   };
+    //   reader.readAsDataURL(file);
+    // }
 
     function updateCtImage(event: Event): void {
       const input = event.target as HTMLInputElement;
@@ -664,7 +688,125 @@ export default defineComponent({
       if (file) {
         uploadedCtImage.value = file;
         selectedFileName.value = file.name;
-        convertFileToUrl(file);
+        // convertFileToUrl(file);
+        load3DModel(file);
+      }
+    }
+
+    function load3DModel(file: File) {
+      console.log("load3DModel 호출 완료");
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        if (reader.result && viewer.value) {
+          initializeThreeJS(); // Three.js 초기화
+          const objData = reader.result as string;
+
+          if (file.name.toLowerCase().endsWith(".obj")) {
+            loadOBJModel(objData);
+          } else if (file.name.toLowerCase().endsWith(".stl")) {
+            loadSTLModel(reader.result as ArrayBuffer);
+          } else {
+            console.error("지원되지 않는 파일 형식입니다.");
+            return;
+          }
+
+          camera.position.set(0, 0, 10); // Adjust the camera position as needed
+          camera.lookAt(0, 0, 0); // Look at the center of the scene
+          startAnimation();
+        }
+      };
+
+      // .obj 파일은 텍스트로, .stl 파일은 바이너리로 읽기
+      if (file.name.toLowerCase().endsWith(".obj")) {
+        reader.readAsText(file);
+      } else if (file.name.toLowerCase().endsWith(".stl")) {
+        reader.readAsArrayBuffer(file);
+      }
+    }
+
+    function initializeThreeJS(): void {
+      scene = new THREE.Scene();
+      if (viewer.value) {
+        camera = new THREE.PerspectiveCamera(
+          75,
+          viewer.value.clientWidth / viewer.value.clientHeight,
+          0.1,
+          1000
+        );
+      } else {
+        console.error("Viewer is not initialized");
+        return; // Handle the case where viewer is null
+      }
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(viewer.value.clientWidth, viewer.value.clientHeight);
+
+      // 다크 모드와 라이트 모드에 따라 배경색 설정
+      watch(currentTheme, (newTheme) => {
+        if (newTheme === "dark") {
+          renderer.setClearColor(0x121212);
+        } else {
+          renderer.setClearColor(0xffffff);
+        }
+      });
+
+      viewer.value.innerHTML = "";
+      viewer.value.appendChild(renderer.domElement);
+
+      // OrbitControls 초기화
+      initializeOrbitControls(camera, renderer.domElement);
+    }
+
+    function initializeOrbitControls(
+      camera: THREE.PerspectiveCamera,
+      rendererDomElement: HTMLElement
+    ): void {
+      controls = new OrbitControls(camera, rendererDomElement);
+      controls.enableDamping = true; // 감속 효과 활성화
+      controls.dampingFactor = 0.25;
+      controls.screenSpacePanning = true; // 드래그(패닝) 활성화
+      controls.maxPolarAngle = Math.PI / 2;
+      controls.minDistance = 3; // 최소 거리
+      controls.maxDistance = 50; // 최대 거리
+    }
+
+    function loadOBJModel(objData: string): void {
+      const loader = new OBJLoader();
+      const objModel = loader.parse(objData);
+      objModel.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const mesh = child as THREE.Mesh;
+          mesh.material = new THREE.MeshNormalMaterial();
+        }
+      });
+      scene.add(objModel);
+    }
+
+    function loadSTLModel(stlData: ArrayBuffer): void {
+      const loader = new STLLoader();
+      const geometry = loader.parse(stlData);
+      const material = new THREE.MeshNormalMaterial();
+      const stlModel = new THREE.Mesh(geometry, material);
+      stlModel.scale.set(0.2, 0.2, 0.2);
+      scene.add(stlModel);
+    }
+
+    function startAnimation(): void {
+      const animate = () => {
+        requestAnimationFrame(animate);
+        controls.update(); // OrbitControls 업데이트
+        renderer.render(scene, camera);
+      };
+
+      animate();
+    }
+
+    function resizeViewer(): void {
+      if (viewer.value && renderer) {
+        renderer.setSize(viewer.value.clientWidth, viewer.value.clientHeight);
+        camera.aspect = viewer.value.clientWidth / viewer.value.clientHeight;
+        camera.updateProjectionMatrix(); // Update the projection matrix
       }
     }
 
@@ -747,7 +889,7 @@ export default defineComponent({
         console.log(
           `환자 ID ${patient.id}는 이미 존재합니다. 추가하지 않습니다.`
         );
-        return; // 중복된 환자 ID가 있을 경우 함수 종료
+        return;
       }
 
       // 환자 정보를 리스트에 추가
@@ -764,7 +906,7 @@ export default defineComponent({
       uploadedCtImage.value = patient.uploadedCtImage;
 
       if (uploadedCtImage.value) {
-        convertFileToUrl(uploadedCtImage.value);
+        load3DModel(uploadedCtImage.value);
       }
       activeStep.value++;
     }
@@ -779,6 +921,20 @@ export default defineComponent({
     }
 
     onMounted(() => {
+      // WebGL 지원 확인
+      if (!window.WebGLRenderingContext) {
+        console.error("WebGL is not supported in this browser");
+        return;
+      }
+
+      const canvas = document.createElement("canvas");
+      const gl =
+        canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+      if (!gl) {
+        console.error("WebGL context could not be initialized");
+        return;
+      }
+
       // guideImages 초기화
       for (let i = 1; i <= 8; i++) {
         import(`@/assets/guide${i}.png`).then((module) => {
@@ -792,11 +948,22 @@ export default defineComponent({
           jigImages.value.push(module.default);
         });
       }
+
+      if (viewer.value) {
+        viewer.value.style.width = "100%";
+        viewer.value.style.height = "60vh";
+        window.addEventListener("resize", resizeViewer);
+        resizeViewer();
+      }
     });
 
     function onJigImageClick(slotNumber: number): void {
       selectedImage.value = jigImages.value[slotNumber - 1];
     }
+
+    onBeforeUnmount(() => {
+      window.removeEventListener("resize", resizeViewer);
+    });
 
     return {
       activeStep,
@@ -837,6 +1004,7 @@ export default defineComponent({
       ctSwitch,
       selectedRadio,
       options,
+      viewer,
     };
   },
 });
@@ -875,11 +1043,17 @@ export default defineComponent({
 .model-view-section {
   width: 100%;
   height: 500px;
-  display: flex;
   border: 1px solid rgb(var(--v-theme-borderColor));
   border-radius: 5px;
-  justify-content: center;
-  align-items: center;
+  position: relative;
+}
+
+.viewer-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: rgb(var(--v-theme-background));
 }
 
 /* file select 시작*/
@@ -893,7 +1067,7 @@ export default defineComponent({
 .jig-slot {
   height: 12rem;
   width: 100%;
-  border: 1px solid rgb(var(--v-theme-borderColor));
+  border: 1px solid rgb(var(--v-theme-borderColor), 0.5);
   border-radius: 5px;
 }
 
@@ -910,6 +1084,7 @@ export default defineComponent({
   display: flex;
   justify-content: center;
   align-items: center;
+  box-shadow: none;
 }
 
 .guide-image {

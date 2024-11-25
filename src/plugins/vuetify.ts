@@ -4,9 +4,13 @@ import "vuetify/styles";
 
 // Composables
 import { createVuetify } from "vuetify";
+import * as components from "vuetify/components";
+import * as directives from "vuetify/directives";
 
 // 테마 설정
 export default createVuetify({
+  components,
+  directives,
   theme: {
     defaultTheme: "dark", // 기본 테마
     themes: {
