@@ -748,7 +748,7 @@ export default defineComponent({
 
       // 다크 모드와 라이트 모드에 따라 배경색 설정
       watch(currentTheme, (newTheme) => {
-        if (newTheme === "dark") {
+        if (newTheme === "dark" || newTheme === "darkSecondary") {
           renderer.setClearColor(0x121212);
         } else {
           renderer.setClearColor(0xffffff);
