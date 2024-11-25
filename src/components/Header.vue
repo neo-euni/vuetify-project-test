@@ -6,9 +6,9 @@
         location="right center"
         transition="slide-y-reverse-transition"
       >
-        <template v-slot:activator="{ props: activatorProps }">
+        <template v-slot:activator="{ props: themeBtnProps }">
           <v-btn
-            v-bind="activatorProps"
+            v-bind="themeBtnProps"
             icon
             :color="currentBorderColor"
             size="large"
@@ -29,6 +29,18 @@
           <v-icon :color="theme.borderColor">{{ theme.icon }}</v-icon>
         </v-btn>
       </v-speed-dial>
+
+      <!-- 환자 정보가 완전히 입력되었는지 알림 메시지 -->
+      <transition name="slide-down">
+        <v-alert
+          v-if="isPatientInfoComplete"
+          type="error"
+          dense
+          class="alert-patient-warning"
+        >
+          환자 필수 요소를 입력해주세요.
+        </v-alert>
+      </transition>
 
       <!-- stepper 시작  -->
       <v-stepper
@@ -134,11 +146,6 @@
                       </div>
                     </v-form>
                   </v-card-text>
-
-                  <!-- 알림 메시지 -->
-                  <v-alert v-if="showAlert" type="error" dense>
-                    환자 필수 요소를 입력해주세요.
-                  </v-alert>
 
                   <!-- 구강 이미지 케이스 세팅 -->
                   <v-card-title>Case Setting</v-card-title>
@@ -409,6 +416,13 @@
 import { ref, onMounted, nextTick, watch, defineComponent } from "vue";
 import { useTheme } from "vuetify";
 
+interface Theme {
+  name: string;
+  color: string;
+  icon: string;
+  borderColor: string;
+}
+
 class Patient {
   name: string;
   id: string;
@@ -454,31 +468,31 @@ class Patient {
 export default defineComponent({
   setup() {
     const STEP: number = 1;
-    const activeStep = ref(STEP);
+    const activeStep = ref<number>(STEP);
     const patientList = ref<Patient[]>([]);
-    const newPatient = ref(new Patient());
-    const today = ref(new Date().toISOString().split("T")[0]);
-    const showMouthStructure = ref(false);
+    const newPatient = ref<Patient>(new Patient());
+    const today = ref<string>(new Date().toISOString().split("T")[0]);
+    const showMouthStructure = ref<boolean>(false);
     const uploadedCtImage = ref<File | null>(null);
-    const showAlert = ref(false);
+    const isPatientInfoComplete = ref<boolean>(false);
     const guideImages = ref<string[]>([]);
     const jigImages = ref<string[]>([]);
     const selectedImage = ref<string | null>(null);
     const selectedFileName = ref<string>("");
     const selectedGuideAndJigCase: number = 1;
-    const activeTab = ref(selectedGuideAndJigCase);
+    const activeTab = ref<number>(selectedGuideAndJigCase);
     // 그림판 기능
     const detectionCanvas = ref<HTMLCanvasElement | null>(null);
     const detectionCtx = ref<CanvasRenderingContext2D | null>(null);
-    const x = ref(0);
-    const y = ref(0);
-    const isDrawing = ref(false);
+    const x = ref<number>(0);
+    const y = ref<number>(0);
+    const isDrawing = ref<boolean>(false);
 
-    //테마 변경
+    // 테마 변경
     const theme = useTheme();
-    const currentTheme = ref(theme.global.name.value);
-    const currentBorderColor = ref("rgb(var(--v-theme-borderColor))");
-    const themeList = ref([
+    const currentTheme = ref<string>(theme.global.name.value);
+    const currentBorderColor = ref<string>("rgb(var(--v-theme-borderColor))");
+    const themeList = ref<Theme[]>([
       {
         name: "light",
         color: "#FFFFFF",
@@ -518,9 +532,9 @@ export default defineComponent({
     ]);
 
     // 커스텀 라디오버튼 테스트 변수 설정
-    const ctSwitch = ref(false);
-    const selectedRadio = ref("one");
-    const options = ref([
+    const ctSwitch = ref<boolean>(false);
+    const selectedRadio = ref<string>("one");
+    const options = ref<{ label: string; value: string; icon: string }[]>([
       { label: "Option One", value: "one", icon: "mdi-star-outline" },
       { label: "Option Two", value: "two", icon: "mdi-star" },
       { label: "Option Three", value: "three", icon: "mdi-star-half" },
@@ -528,7 +542,7 @@ export default defineComponent({
 
     // 밑에부터 건들지말기
     // 테마 변경 함수
-    function changeTheme(themeName: string) {
+    function changeTheme(themeName: string): void {
       currentTheme.value = themeName;
       theme.global.name.value = currentTheme.value;
     }
@@ -541,7 +555,7 @@ export default defineComponent({
     //   theme.global.name.value = currentTheme.value;
     // }
 
-    function initializeCanvas() {
+    function initializeCanvas(): void {
       if (detectionCanvas.value) {
         console.log("Canvas context initialized");
         detectionCtx.value = detectionCanvas.value.getContext("2d");
@@ -562,7 +576,7 @@ export default defineComponent({
     function scaleCanvasForHighResolution(
       canvas: HTMLCanvasElement,
       ctx: CanvasRenderingContext2D
-    ) {
+    ): void {
       const dpr = window.devicePixelRatio || 1;
       canvas.width = canvas.clientWidth * dpr;
       canvas.height = canvas.clientHeight * dpr;
@@ -570,14 +584,14 @@ export default defineComponent({
       ctx.scale(1, 1);
     }
 
-    function setCanvasDimensions(canvas: HTMLCanvasElement) {
+    function setCanvasDimensions(canvas: HTMLCanvasElement): void {
       const canvasWidth = canvas.clientWidth;
       const canvasHeight = canvas.clientHeight;
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
     }
 
-    function drawLine(x1: number, y1: number, x2: number, y2: number) {
+    function drawLine(x1: number, y1: number, x2: number, y2: number): void {
       if (detectionCtx.value) {
         detectionCtx.value.lineWidth = 5;
         detectionCtx.value.strokeStyle = "#6200EE";
@@ -589,7 +603,7 @@ export default defineComponent({
       }
     }
 
-    function getMousePosition(e: MouseEvent) {
+    function getMousePosition(e: MouseEvent): { x: number; y: number } {
       if (!detectionCanvas.value) {
         throw new Error("Canvas is not initialized");
       }
@@ -602,14 +616,14 @@ export default defineComponent({
       };
     }
 
-    function beginDrawing(e: MouseEvent) {
+    function beginDrawing(e: MouseEvent): void {
       const position = getMousePosition(e);
       x.value = position.x;
       y.value = position.y;
       isDrawing.value = true;
     }
 
-    function keepDrawing(e: MouseEvent) {
+    function keepDrawing(e: MouseEvent): void {
       if (isDrawing.value) {
         const position = getMousePosition(e);
         drawLine(x.value, y.value, position.x, position.y);
@@ -618,7 +632,7 @@ export default defineComponent({
       }
     }
 
-    function stopDrawing() {
+    function stopDrawing(): void {
       isDrawing.value = false;
     }
 
@@ -630,7 +644,7 @@ export default defineComponent({
     });
 
     //file을 url로 변환하여 화면에 로드함
-    function convertFileToUrl(file: File) {
+    function convertFileToUrl(file: File): void {
       const reader = new FileReader();
       reader.onload = (e) => {
         selectedFileName.value = e.target?.result as string;
@@ -638,7 +652,7 @@ export default defineComponent({
       reader.readAsDataURL(file);
     }
 
-    function updateCtImage(event: Event) {
+    function updateCtImage(event: Event): void {
       const input = event.target as HTMLInputElement;
       const file = input.files ? input.files[0] : null;
 
@@ -649,19 +663,19 @@ export default defineComponent({
       }
     }
 
-    function createPatient() {
+    function createPatient(): void {
       activeStep.value++;
       cancelNewPatient();
     }
 
-    function cancelNewPatient() {
+    function cancelNewPatient(): void {
       newPatient.value.reset();
       uploadedCtImage.value = null;
       selectedFileName.value = "";
       selectedImage.value = null;
     }
 
-    function insertNewPatient(patient: Patient) {
+    function insertNewPatient(patient: Patient): void {
       patientList.value.unshift(
         new Patient(
           patient.name,
@@ -676,22 +690,21 @@ export default defineComponent({
       );
     }
 
-    function isPatientInfoValid(patient: Patient) {
-      return patient.name && patient.id && patient.gender && patient.dob;
+    function isPatientInfoValid(patient: Patient): boolean {
+      return !!(patient.name && patient.id && patient.gender && patient.dob);
     }
 
-    function showAlertMessage() {
-      showAlert.value = true;
+    function showAlertMessage(): void {
+      isPatientInfoComplete.value = true;
       setTimeout(() => {
-        showAlert.value = false;
+        isPatientInfoComplete.value = false;
       }, 3000);
     }
 
-    function saveNewPatient() {
+    function saveNewPatient(): void {
       if (isPatientInfoValid(newPatient.value)) {
         newPatient.value.uploadedCtImage = uploadedCtImage.value;
         newPatient.value.selectedImage = selectedImage.value || "";
-
         insertNewPatient(newPatient.value);
         showMouthStructure.value = true;
         activeStep.value--;
@@ -700,7 +713,7 @@ export default defineComponent({
       }
     }
 
-    function loadPatientCase(patient: Patient, index: number) {
+    function loadPatientCase(patient: Patient, index: number): void {
       newPatient.value = patient;
       selectedImage.value = patient.selectedImage;
       selectedFileName.value = patient.selectedFileName;
@@ -713,7 +726,7 @@ export default defineComponent({
       activeStep.value++;
     }
 
-    function onGuideImageClick(slotNumber: number) {
+    function onGuideImageClick(slotNumber: number): void {
       console.log(`Slot ${slotNumber} clicked`);
       if (activeTab.value === 1) {
         selectedImage.value = guideImages.value[slotNumber - 1];
@@ -738,7 +751,7 @@ export default defineComponent({
       }
     });
 
-    function onJigImageClick(slotNumber: number) {
+    function onJigImageClick(slotNumber: number): void {
       selectedImage.value = jigImages.value[slotNumber - 1];
     }
 
@@ -754,7 +767,7 @@ export default defineComponent({
       loadPatientCase,
       uploadedCtImage,
       updateCtImage,
-      showAlert,
+      isPatientInfoComplete,
 
       // 지그 선택 기능
       onGuideImageClick,
@@ -917,5 +930,43 @@ canvas {
   background-size: cover; /* 배경 이미지가 요소의 크기에 맞게 조정되도록 설정 */
   background-repeat: no-repeat; /* 배경 이미지 반복 없음 */
   width: 100%;
+}
+
+.alert-patient-warning {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  z-index: 1000;
+}
+
+/* 커스텀 트랜지션 */
+.slide-down-enter-active {
+  animation: slide-down-in 0.5s ease-out forwards;
+}
+.slide-down-leave-active {
+  animation: slide-down-out 0.5s ease-in forwards;
+}
+
+/* 슬라이드 애니메이션 키프레임 */
+@keyframes slide-down-in {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down-out {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
 }
 </style>
